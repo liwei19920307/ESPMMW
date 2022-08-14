@@ -102,10 +102,6 @@ globals:
     restore_value: true
     initial_value: "0"
 
-remote_transmitter:
-  pin: 1
-  carrier_duty_percent: 50%
-
 button:
   - platform: restart
     name: ${device_name}_reboot
@@ -135,13 +131,6 @@ button:
       - uart.write: !lambda return id(start);
       - delay: !lambda return id(uart_delay);
       - uart.write: !lambda return id(reboot);
-  - platform: template
-    name: ${device_name}_tv_on_off
-    on_press:
-      - remote_transmitter.transmit_raw:
-          carrier_frequency: 38kHz
-          code:
-            [-9128, 4391, -681, 471, -658, 474, -653, 481, -623, 532, -599, 532, -599, 520, -611, 510, -620, 533, -598, 1636, -600, 1636, -600, 1636, -600, 1635, -599, 1637, -599, 1637, -598, 532, -599, 1637, -599, 1637, -597, 533, -599, 1637, -598, 1637, -599, 533, -598, 532, -599, 532, -598, 533, -598, 533, -599, 1637, -597, 534, -597, 533, -598, 1638, -597, 1639, -596, 1639, -597, 1639, -597]
 
 number:
   - platform: template
@@ -161,7 +150,6 @@ number:
       - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x60, 0x00, 0x00, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x01, 0x00, (unsigned char)id(max_static_distance), 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)id(unattended_duration), 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
       - delay: !lambda return id(uart_delay);
       - uart.write: !lambda return id(end);
-
   - platform: template
     id: ${device_name}_max_static_distance
     name: ${device_name}_max_static_distance
