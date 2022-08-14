@@ -102,12 +102,6 @@ remote_transmitter:
 
 ## `教程`
 
-太忙了会慢慢更新
-
-- 产品效果
-
-  待更新。。。
-
 - 固件编译
 
   Linux
@@ -152,10 +146,8 @@ remote_transmitter:
   
   7、执行编译命令
     ```yml
-    esphome compile espmmw.yml
+    esphome compile espmmw.yaml
     ```
-
-  8
 
 - 刷机调试
 
@@ -163,14 +155,14 @@ remote_transmitter:
 
   将雷达通过数据线和docker所在的服务器连接并执行如下命令，出现选择项后先1回车
     ```yml
-    esphome run espmmw.yml
+    esphome run espmmw.yaml
     ``` 
 
   Windows
 
   1、安装[python](https://www.python.org/downloads/)环境
 
-  2、安装esptool.py
+  2、安装esptool.py，命令行执行
     ```yml
     pip3 install esptool
     ```
@@ -179,32 +171,6 @@ remote_transmitter:
     ```yml
     esptool.py --chip esp32c3 --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dout --flash_freq 40m --flash_size detect 0x0000 .\bootloader_dout_40m.bin 0x8000 .\partitions.bin 0xe000 .\boot_app0.bin 0x10000 .\xxx.bin
     ``` 
-    
-
-
-- 功能演示
-
-  待更新。。。
-
-- 雷达设置
-
-  待更新。。。
-
-- 红外学码
-
-  待更新。。。
-
-- 红外遥控
-
-  待更新。。。
-
-- 蓝牙配置
-
-  待更新。。。
-
-- 自动化
-
-  待更新。。。
 
 ## `问题`
 
