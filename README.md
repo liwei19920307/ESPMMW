@@ -41,7 +41,7 @@
 
 ## `ESPHOME`
 
-默认配置在 `ESPHOME` 文件夹,其中 `LD2410.h` 是串口适配程序，以下是一些额外功能的例子
+默认配置在 `ESPHOME` 文件夹，其中 `LD2410.h` 是串口适配程序，以下是一些额外功能的例子
 
 注意红外收发不能同时使用，希望 `ESPHOME` 能解决
 
@@ -110,11 +110,77 @@ remote_transmitter:
 
 - 固件编译
 
-  待更新。。。
+  Linux
+
+  1、安装docker及docker-compose
+
+  2、docker-compose.yml文件增加如下内容
+    ```yml
+    version: "3"
+      services:
+
+        esphome:
+          image: esphome/esphome:dev
+          container_name: esphome
+          volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /opt/esphome/conf:/config
+            - /dev:/dev
+          environment:
+            - TZ=Asia/Shanghai
+          network_mode: host
+          restart: always
+          privileged: true
+    ```
+
+   3、安装esphome的docker
+    ```yml
+    docker-compose -f docker-compose.yml up -d
+    ```
+
+   4、打开esphome的web端后新增espmmw的配置文件，编辑配置文件删除全部，将git上的配置粘贴上去保存
+
+   5、docker服务器执行如下命令进入esphome的docker内部
+    ```yml
+    docker exec -it esphome bash
+    ```
+   
+   6、设置https代理
+    ```yml
+    export https_proxy=http://IP:PORT
+    ```
+  
+  7、执行编译命令
+    ```yml
+    esphome compile espmmw.yml
+    ```
+
+  8
 
 - 刷机调试
 
-  待更新。。。
+  Linux
+
+  将雷达通过数据线和docker所在的服务器连接并执行如下命令，出现选择项后先1回车
+    ```yml
+    esphome run espmmw.yml
+    ``` 
+
+  Windows
+
+  1、安装[python](https://www.python.org/downloads/)环境
+
+  2、安装esptool.py
+    ```yml
+    pip3 install esptool
+    ```
+
+  3、将Linux编译的固件，或我提供的固件放到[flash_bin](https://github.com/liwei19920307/ESPMMW/flash_bin)文件夹内，命令行进入flash_bin文件夹，xxx.bin为固件名，将雷达通过数据线连接电脑，执行如下命令
+    ```yml
+    esptool.py --chip esp32c3 --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dout --flash_freq 40m --flash_size detect 0x0000 .\bootloader_dout_40m.bin 0x8000 .\partitions.bin 0xe000 .\boot_app0.bin 0x10000 .\xxx.bin
+    ``` 
+    
+
 
 - 功能演示
 
