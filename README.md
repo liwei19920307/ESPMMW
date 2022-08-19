@@ -102,75 +102,63 @@ remote_transmitter:
 
 ## `教程`
 
-- 固件编译
+- 编译和刷机
 
-  Linux
+  `Linux` （ 以下是在 `x86` 的 `Ubuntu` 下操作的，其他 `Linux` 类似，不支持 `ARM` ）
 
-  1、安装docker及docker-compose
+  1、[安装 docker 及 docker-compose](https://www.bilibili.com/video/BV1vv4y1c7iQ/)
 
-  2、docker-compose.yml文件增加如下内容
-    ```yml
-    version: "3"
-      services:
+  2、`docker-compose.yml` 文件增加如下内容
 
-        esphome:
-          image: esphome/esphome:dev
-          container_name: esphome
-          volumes:
-            - /etc/localtime:/etc/localtime:ro
-            - /opt/esphome/conf:/config
-            - /dev:/dev
-          environment:
-            - TZ=Asia/Shanghai
-          network_mode: host
-          restart: always
-          privileged: true
-    ```
+  ```yml
+  version: "3"
+    services:
 
-   3、安装esphome的docker
-    ```yml
-    docker-compose -f docker-compose.yml up -d
-    ```
+      esphome:
+        image: esphome/esphome:2022.8.0
+        container_name: esphome
+        volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /opt/esphome/conf:/config
+          - /dev:/dev
+        environment:
+          - TZ=Asia/Shanghai
+        network_mode: host
+        restart: always
+        privileged: true
+  ```
 
-   4、打开esphome的web端后新增espmmw的配置文件，编辑配置文件删除全部，将git上的配置粘贴上去保存
+  3、安装 `esphome` 的 `docker`
 
-   5、docker服务器执行如下命令进入esphome的docker内部
-    ```yml
-    docker exec -it esphome bash
-    ```
-   
-   6、设置https代理
-    ```yml
-    export https_proxy=http://IP:PORT
-    ```
-  
-  7、执行编译命令
-    ```yml
-    esphome compile espmmw.yaml
-    ```
+  ```
+  docker-compose -f docker-compose.yml up -d
+  ```
 
-- 刷机调试
+  4、打开 `esphome` 的页面 http://IP:6052，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/main/esphome)的配置粘贴上去，按需修改后保存
 
-  Linux
+  5、`docker` 服务器执行如下命令进入 `esphome` 的 `docker` 内部
 
-  将雷达通过数据线和docker所在的服务器连接并执行如下命令，出现选择项后先1回车
-    ```yml
-    esphome run espmmw.yaml
-    ``` 
+  ```
+  docker exec -it esphome bash
+  ```
 
-  Windows
+  6、设置 https 代理（这部比较重要，编译需要从`git`下载依赖）
 
-  1、安装[python](https://www.python.org/downloads/)环境
+  ```
+  export https_proxy=http://IP:PORT
+  ```
 
-  2、安装esptool.py，命令行执行
-    ```yml
-    pip3 install esptool
-    ```
+  7、将毫米波通过数据线插入服务器
 
-  3、将Linux编译的固件，或我提供的固件放到[flash_bin](https://github.com/liwei19920307/ESPMMW/flash_bin)文件夹内，命令行进入flash_bin文件夹，xxx.bin为固件名，将雷达通过数据线连接电脑，执行如下命令
-    ```yml
-    esptool.py --chip esp32c3 --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dout --flash_freq 40m --flash_size detect 0x0000 .\bootloader_dout_40m.bin 0x8000 .\partitions.bin 0xe000 .\boot_app0.bin 0x10000 .\xxx.bin
-    ``` 
+  8、执行编译并刷入
+
+  ```
+  esphome run espmmw.yaml
+  ```
+
+  `Windows`
+
+  将编译的固件放入[flash_tool](https://github.com/liwei19920307/ESPMMW/tree/main/flash_tool)，按说明操作
 
 ## `问题`
 
@@ -182,7 +170,7 @@ remote_transmitter:
 
 ## `关于开源`
 
-- 这次 `DIY` 是目前花的时间和精力最多的一次，所以暂时只开放软件部分，硬件部分的开源会在后期根据销售情况更新，大家也可以参考我其他项目[S6in1](https://github.com/liwei19920307/S6in1)，和这个[红外遥控外壳](https://detail.1688.com/offer/653134990795.html)自行 `DIY`，时间精力花了不少希望大家理解，我的目标是卖 `10` 个就开源硬件哈哈
+- 这次 `DIY` 是目前花的时间和精力最多的一次，所以暂时只开放软件部分，硬件部分的开源会在后期更新，大家也可以参考我其他项目[S6in1](https://github.com/liwei19920307/S6in1)，和这个[红外遥控外壳](https://detail.1688.com/offer/653134990795.html)自行 `DIY`，时间精力花了不少希望大家理解
 
 - ！！！转载请注明出处 ！！！
 
