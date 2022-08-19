@@ -134,7 +134,7 @@ remote_transmitter:
   docker-compose -f docker-compose.yml up -d
   ```
 
-  4、打开 `esphome` 的页面 http://IP:6052，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/main/esphome)的配置粘贴上去，按需修改后保存
+  4、打开 `esphome` 的页面 `http://IP:6052`，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/main/esphome)的配置粘贴上去，按需修改后保存
 
   5、`docker` 服务器执行如下命令进入 `esphome` 的 `docker` 内部
 
