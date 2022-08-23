@@ -41,37 +41,6 @@
 
 ## `ESPHOME`
 
-默认配置在 `ESPHOME` 文件夹，其中 `LD2410.h` 是串口适配程序，以下是一些额外功能的例子
-
-注意红外收发不能同时使用，希望 `ESPHOME` 能解决
-
-红外接收（`ESPHOME` 的 `BUG` 需要先定义一个假的接收服务 `GIPIO10`，和 `RMT` 有关）
-
-```yaml
-remote_receiver:
-  - id: ${device_name}_null
-    pin:
-      number: 10
-      inverted: true
-    dump: raw
-  - id: ${device_name}_rr
-    pin:
-      number: 0
-    dump: raw
-```
-
-红外发射
-
-```yaml
-remote_transmitter:
-  pin: 1
-  carrier_duty_percent: 50%
-```
-
-蓝牙
-
-参考[ESPHOME](https://esphome.io/components/esp32_ble_tracker.html)
-
 ![ESPHOME1](./img/ESPHOME1.jpg)
 
 | 组件                       | 含义                                                          |
