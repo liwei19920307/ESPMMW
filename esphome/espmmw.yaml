@@ -131,6 +131,81 @@ button:
       - uart.write: !lambda return id(start);
       - delay: !lambda return id(uart_delay);
       - uart.write: !lambda return id(reboot);
+  - platform: template
+    name: ${device_name}_tv_on_off
+    on_press:
+      - remote_transmitter.transmit_raw:
+          carrier_frequency: 38kHz
+          code:
+            [
+              9045,
+              -4500,
+              585,
+              -520,
+              578,
+              -527,
+              580,
+              -525,
+              578,
+              -527,
+              586,
+              -518,
+              579,
+              -525,
+              580,
+              -525,
+              585,
+              -519,
+              569,
+              -1641,
+              583,
+              -1626,
+              585,
+              -1624,
+              580,
+              -1628,
+              586,
+              -1677,
+              579,
+              -1630,
+              580,
+              -526,
+              583,
+              -1625,
+              586,
+              -1623,
+              586,
+              -519,
+              586,
+              -1622,
+              582,
+              -1628,
+              587,
+              -518,
+              580,
+              -524,
+              585,
+              -520,
+              586,
+              -519,
+              584,
+              -520,
+              585,
+              -1650,
+              584,
+              -521,
+              588,
+              -517,
+              580,
+              -1630,
+              584,
+              -1624,
+              585,
+              -1624,
+              586,
+              -1623,
+              585
+            ]
 
 number:
   - platform: template
@@ -140,7 +215,7 @@ number:
     min_value: 0
     max_value: 8
     step: 1
-    unit_of_measurement: m
+    unit_of_measurement: x 0.75m
     set_action:
       - globals.set:
           id: max_move_distance
@@ -157,7 +232,7 @@ number:
     min_value: 0
     max_value: 8
     step: 1
-    unit_of_measurement: m
+    unit_of_measurement: x 0.75m
     set_action:
       - globals.set:
           id: max_static_distance
@@ -248,7 +323,7 @@ sensor:
     pin: 3
     name: ${device_name}_brightness
     attenuation: 11db
-    update_interval: 6s
+    update_interval: 5s
     unit_of_measurement: "%"
     icon: mdi:brightness-6
     accuracy_decimals: 0
@@ -279,6 +354,15 @@ sensor:
     id: ${device_name}_detection_distance
     name: ${device_name}_detection_distance
     unit_of_measurement: "cm"
+  - platform: xiaomi_lywsd03mmc
+    mac_address: #mac
+    bindkey: #bindkey
+    temperature:
+      name: ${device_name}_mi_temperature
+    humidity:
+      name: ${device_name}_mi_humidity
+    battery_level:
+      name: ${device_name}_mi_battery
   - platform: custom
     lambda: |-
       auto ld2410 = new LD2410(id(uart_bus));
@@ -389,3 +473,7 @@ text_sensor:
   - platform: template
     id: ${device_name}_mmw_status
     name: ${device_name}_mmw_status
+
+remote_transmitter:
+  pin: 1
+  carrier_duty_percent: 50%

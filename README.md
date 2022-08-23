@@ -85,19 +85,19 @@ remote_transmitter:
 | espmmw_mac                 | MAC                                                           |
 | espmmw_max_move_distance   | 最大移动距离调节（最大距离=n\*0.75 米）                       |
 | espmmw_max_static_distance | 最大静止距离调节 （最大距离=n\*0.75 米）                      |
-| espmmw_mmw                 | 毫米波状态                                                    |
+| espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人）态                                                    |
 | espmmw_mmw_status          | 毫米波状态（OFF-关闭，MOVE-运动，STATIC-静止，ON 运动或静止） |
 | espmmw_move_distance       | 当前运动距离                                                  |
-| espmmw_move_energy         | 当前运动能量                                                  |
+| espmmw_move_energy         | 当前运动能量值                                                |
 | espmmw_move_sensitivity    | 移动灵敏度调节                                                |
 | espmmw_reboot              | 重启 esp                                                      |
 | espmmw_reboot_mmw          | 重启毫米波                                                    |
 | espmmw_reset_mmw           | 重置毫米波                                                    |
 | espmmw_signal              | WiFi 信号强度                                                 |
 | espmmw_static_distance     | 当前静止距离                                                  |
-| espmmw_static_energy       | 当前静止能量                                                  |
+| espmmw_static_energy       | 当前静止能量值                                                |
 | espmmw_static_sensitivity  | 静止灵敏度调节                                                |
-| espmmw_unattended_duration | 无人值守时间调节                                              |
+| espmmw_unattended_duration | 无人持续时间调节                                              |
 | espmmw_uptime              | 运行时间                                                      |
 
 ## `教程`
@@ -159,6 +159,98 @@ remote_transmitter:
   `Windows`
 
   将编译的固件放入[flash_tool](https://github.com/liwei19920307/ESPMMW/tree/main/flash_tool)，按说明操作
+
+- [有人无人触发过程](https://www.bilibili.com/video/BV1uU4y167zn)
+
+  | 组件                       | 含义                           |
+  | -------------------------- | ------------------------------ |
+  | espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人） |
+  | espmmw_move_energy         | 当前运动能量值                 |
+  | espmmw_move_sensitivity    | 移动灵敏度调节                 |
+  | espmmw_static_energy       | 当前静止能量值                 |
+  | espmmw_static_sensitivity  | 静止灵敏度调节                 |
+  | espmmw_unattended_duration | 无人持续时间调节               |
+
+  1、当 `espmmw_move_energy` 超大于设定的 `espmmw_move_sensitivity` 时 `espmmw_mmw` 触发 `ON`
+
+  2、当 `espmmw_static_energy` 小于设定的 `espmmw_static_sensitivity` 时 `espmmw_mmw` 触发 `OFF`
+
+  3、`espmmw_mmw` 触发 `ON` 之前都是通过 `espmmw_move_energy` 的值判断的，一旦触发 `ON` 后，后面的检测都是通过 `espmmw_static_energy` 来判断是否 `OFF` 的
+
+  4、我把 `espmmw_move_sensitivity` 设置成 `99` 是为了防止一些轻微的动作误触有人，比如阳台的衣服或者窗帘微动
+
+  5、我把 `espmmw_static_sensitivity` 设置成 `10` 是为了更好的检测呼吸，防止误触无人
+
+  6、实际使用中大家可以根据环境内的 `espmmw_static_energy` 值来设置，因为有些环境 `espmmw_static_energy` 就是高于 `10` 的，我自己家用 `10` 是没啥问题的，但有些地方调高一点比如阳台，防止衣服微动导致无法触发 `espmmw_mmw` 的 `OFF`
+
+- [参数设置](https://www.bilibili.com/video/BV1TU4y16723)
+  
+  由于`ESPHOME`的一些限制，还有雷达模块串口设置容易死机，所以需要以下步骤多次确认
+
+  1、先点击`espmmw_get_con`f获取配置，如果配置获取失败拔电重启再重复操作
+  
+  2、设置好后一定要点击`espmmw_get_conf`获取配置确认
+
+- 红外收发
+
+  红外接收一般用来学习遥控器后模拟，或者接收指定代码后，执行特定操作
+
+  请看[rr](https://github.com/liwei19920307/ESPMMW/tree/main/rr)文件夹内的说明
+
+  [收`RAW`码](https://www.bilibili.com/video/BV1jg411r7mz)
+
+  `C3`的`ESPHOME`有`BUG`，需要定义一个没用的`${device_name}_null`
+
+  ```yml
+  remote_receiver:
+    - id: ${device_name}_null
+      pin:
+        number: 10
+        inverted: true
+      dump: raw
+    - id: ${device_name}_rr
+      pin:
+        number: 0
+      dump: raw
+  ```
+
+  发RAW码
+
+  将学习到的`RAW`码填入
+
+  ```yml
+    remote_transmitter:
+    pin: 1
+    carrier_duty_percent: 50%
+
+    - platform: template
+    name: ${device_name}_tv_on_off
+    on_press:
+      - remote_transmitter.transmit_raw:
+          carrier_frequency: 38kHz
+          code:
+            [#这里放入日志中打印的RAW码]
+  ```
+
+- 蓝牙网关
+  
+  [米家低功耗](https://esphome.io/components/sensor/xiaomi_ble.html)
+
+  [Bindkey获取](https://esphome.io/components/sensor/xiaomi_ble.html#obtaining-the-bindkey)
+
+  ```yml
+    esp32_ble_tracker:
+
+    - platform: xiaomi_lywsd03mmc
+      mac_address: #mac
+      bindkey: #bindkey
+      temperature:
+        name: ${device_name}_mi_temperature
+      humidity:
+        name: ${device_name}_mi_humidity
+      battery_level:
+        name: ${device_name}_mi_battery
+  ```
 
 ## `问题`
 
