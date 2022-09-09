@@ -33,6 +33,12 @@ web_server:
   port: 80
 
 esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
 
 uart:
   id: uart_bus
@@ -354,15 +360,6 @@ sensor:
     id: ${device_name}_detection_distance
     name: ${device_name}_detection_distance
     unit_of_measurement: "cm"
-  - platform: xiaomi_lywsd03mmc
-    mac_address: #mac
-    bindkey: #bindkey
-    temperature:
-      name: ${device_name}_mi_temperature
-    humidity:
-      name: ${device_name}_mi_humidity
-    battery_level:
-      name: ${device_name}_mi_battery
   - platform: custom
     lambda: |-
       auto ld2410 = new LD2410(id(uart_bus));
