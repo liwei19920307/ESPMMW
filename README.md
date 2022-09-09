@@ -203,6 +203,8 @@
 
 - 蓝牙网关
   
+  直接采集
+  
   [米家低功耗](https://esphome.io/components/sensor/xiaomi_ble.html)
 
   [Bindkey获取](https://esphome.io/components/sensor/xiaomi_ble.html#obtaining-the-bindkey)
@@ -220,6 +222,31 @@
       battery_level:
         name: ${device_name}_mi_battery
   ```
+
+  `ESPHOME`代理
+
+  `ESPHOME`和`HA`添加配置后重启，`HA`集成里就会出现支持的设备，配置如下
+
+  `HA`的`configuration.yaml`添加
+
+  ```yml
+    # Bluetooth
+    bluetooth:
+  ```
+
+  `ESPHOME`配置添加
+
+  ```yml
+    esp32_ble_tracker:
+      scan_parameters:
+        interval: 1100ms
+        window: 1100ms
+        active: true
+
+    bluetooth_proxy:
+  ```
+
+  ![BLE1](./img/BLE1.png)
 
 ## `问题`
 
