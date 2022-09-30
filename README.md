@@ -4,7 +4,9 @@
 
 ![MMW1](./img/MMW1.jpg)
 
-### 讨论群： `810581215`
+<font color='red' size=4> 禁止商用和私自销售，请尊重原创 </font>
+
+### 讨论群： 810581215
 
 最近毫米波很火，正好模块价格也下来了，群友介绍购买了海凌科 `LD2410` 的毫米波模块，参与了早期测试版本。在 `1688` 找到了一个相对完美的[红外遥控外壳](https://detail.1688.com/offer/653134990795.html)，稍加修改之前[S6in1](https://github.com/liwei19920307/S6in1)的项目，画了 `PCB` 测试。为了实现 `LD2410` 串口相关功能，找到了一个外国大佬的[帖子](https://community.home-assistant.io/t/mmwave-presence-detection-esphome-style/382778)，啃了两天 `C++`基础，搞出了相对完美的 `ESPHOME`
 固件。因为很忙，都是抽空搞的，整个项目总共花了两个月。`PCB` 测试样品花了一些时间，固件编写也花了几天时间，更多的时间都是用来测试毫米波稳定性，稳定性这里要感谢我的硬件大佬朋友孔老板的指导
@@ -18,6 +20,33 @@
 - 成本低廉（总体硬件成本 `50` 左右）
 - 稳定性极好
 - 主控 `ESP32C3`
+
+### 材料清单
+
+| 名称                                      | 型号             | 数量 |  PCB 标注  |                           链接                            |
+| ----------------------------------------- | ---------------- | ---: | :--------: | :-------------------------------------------------------: |
+| LD2410 毫米波雷达                         | LD2410 / LD2410B |    1 |   LD2410   | [购买](https://detail.tmall.com/item.htm?id=676636157827) |
+| VS/HX1838/PC638 红外接收头                |                  |    1 |   HX1838   | [购买](https://item.taobao.com/item.htm?id=522552967131)  |
+| 3MM 940nm 红外发射管                      |                  |    2 |  LA / LB   | [购买](https://item.taobao.com/item.htm?id=522572541770)  |
+| 光敏电阻 5516                             |                  |    1 |   GL5516   | [购买](https://item.taobao.com/item.htm?id=522556415238)  |
+| ME1117A33B3G 线性稳压器                   |                  |    1 |   1117-3   | [购买](https://item.taobao.com/item.htm?id=668286085588)  |
+| ESP-C3-13U 模块                           |                  |    1 | ESP-C3-13U | [购买](https://item.taobao.com/item.htm?id=652413887471)  |
+| 贴片 S8050 J3Y 贴片三极管 500MA SOT-23    |                  |    1 |    J3Y     | [购买](https://item.taobao.com/item.htm?id=522577964105)  |
+| 0603 贴片电阻 1MΩ 1 兆欧 1/10W 精度 ±1%   |                  |    1 |     R1     | [购买](https://item.taobao.com/item.htm?id=525898476191)  |
+| 0603 贴片电阻 10KΩ 10 千欧 1/10W 精度 ±1% |                  |    1 |     R2     | [购买](https://item.taobao.com/item.htm?id=525777943950)  |
+| 直插固态电解电容 1000uF 6.3V 6.3\*11.5mm  |                  |    1 |     C1     | [购买](https://item.taobao.com/item.htm?id=610051037283)  |
+| 1206 贴片电容 4.7UF                       |                  |    1 |     C2     | [购买](https://item.taobao.com/item.htm?id=522554031501)  |
+| 1.27mm 间距 单排母                        | 1X5P             |    1 |   LD2410   | [购买](https://item.taobao.com/item.htm?id=570980565161)  |
+| 贴片 USB-3.1 插座 Type-C 母座 16P         |                  |    1 |   TYPE-C   | [购买](https://item.taobao.com/item.htm?id=573090887123)  |
+| 直插 6\*6 轻触开关                        | 5、0 高          |    1 |   BUTTON   |  [购买](https://item.taobao.com/item.htm?id=36605575136)  |
+| 2.4G 内置柔性 FPC 软天线                  | IPEX 接头        |    1 |     -      | [购买](https://item.taobao.com/item.htm?id=574057911861)  |
+| 304 不锈钢平头自攻螺丝                    | M1.7\*6          |    3 |     -      | [购买](https://detail.tmall.com/item.htm?id=529579107673) |
+| 红外转发器外壳                            |                  |    1 |     -      |  [购买](https://detail.1688.com/offer/653134990795.html)  |
+| 车载磁吸出风口手机支架                    |                  |    1 |     -      |  [购买](https://detail.1688.com/offer/632680243184.html)  |
+
+### DIY 步骤
+
+打板-->焊接-->组装-->刷机
 
 ### 固件特点：
 
@@ -54,7 +83,7 @@
 | espmmw_mac                 | MAC                                                           |
 | espmmw_max_move_distance   | 最大移动距离调节（最大距离=n\*0.75 米）                       |
 | espmmw_max_static_distance | 最大静止距离调节 （最大距离=n\*0.75 米）                      |
-| espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人）态                                                    |
+| espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人）态                             |
 | espmmw_mmw_status          | 毫米波状态（OFF-关闭，MOVE-运动，STATIC-静止，ON 运动或静止） |
 | espmmw_move_distance       | 当前运动距离                                                  |
 | espmmw_move_energy         | 当前运动能量值                                                |
@@ -131,14 +160,14 @@
 
 - [有人无人触发过程](https://www.bilibili.com/video/BV1uU4y167zn)
 
-  | 组件                       | 含义                           |
-  | -------------------------- | ------------------------------ |
+  | 组件                       | 含义                            |
+  | -------------------------- | ------------------------------- |
   | espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人） |
-  | espmmw_move_energy         | 当前运动能量值                 |
-  | espmmw_move_sensitivity    | 移动灵敏度调节                 |
-  | espmmw_static_energy       | 当前静止能量值                 |
-  | espmmw_static_sensitivity  | 静止灵敏度调节                 |
-  | espmmw_unattended_duration | 无人持续时间调节               |
+  | espmmw_move_energy         | 当前运动能量值                  |
+  | espmmw_move_sensitivity    | 移动灵敏度调节                  |
+  | espmmw_static_energy       | 当前静止能量值                  |
+  | espmmw_static_sensitivity  | 静止灵敏度调节                  |
+  | espmmw_unattended_duration | 无人持续时间调节                |
 
   1、当 `espmmw_move_energy` 超大于设定的 `espmmw_move_sensitivity` 时 `espmmw_mmw` 触发 `ON`
 
@@ -153,11 +182,11 @@
   6、实际使用中大家可以根据环境内的 `espmmw_static_energy` 值来设置，因为有些环境 `espmmw_static_energy` 就是高于 `10` 的，我自己家用 `10` 是没啥问题的，但有些地方调高一点比如阳台，防止衣服微动导致无法触发 `espmmw_mmw` 的 `OFF`
 
 - [参数设置](https://www.bilibili.com/video/BV1TU4y16723)
-  
+
   由于`ESPHOME`的一些限制，还有雷达模块串口设置容易死机，所以需要重复步骤多次确认
 
   1、先点击`espmmw_get_conf`获取配置，如果配置获取失败拔电重启再重复操作
-  
+
   2、设置好后一定要点击`espmmw_get_conf`获取配置确认设置成功
 
 - 红外收发
@@ -183,7 +212,7 @@
       dump: raw
   ```
 
-  发RAW码
+  发 RAW 码
 
   将学习到的`RAW`码填入
 
@@ -202,16 +231,15 @@
   ```
 
 - 蓝牙网关
-  
+
   直接采集
-  
+
   [米家低功耗](https://esphome.io/components/sensor/xiaomi_ble.html)
 
-  [Bindkey获取](https://esphome.io/components/sensor/xiaomi_ble.html#obtaining-the-bindkey)
+  [Bindkey 获取](https://esphome.io/components/sensor/xiaomi_ble.html#obtaining-the-bindkey)
 
   ```yml
-    esp32_ble_tracker:
-
+  esp32_ble_tracker:
     - platform: xiaomi_lywsd03mmc
       mac_address: #mac
       bindkey: #bindkey
@@ -230,16 +258,16 @@
   `HA`的`configuration.yaml`添加
 
   ```yml
-    # Bluetooth
-    bluetooth:
+  # Bluetooth
+  bluetooth:
   ```
 
   `ESPHOME`配置添加
 
   ```yml
-    esp32_ble_tracker:
+  esp32_ble_tracker:
 
-    bluetooth_proxy:
+  bluetooth_proxy:
   ```
 
   ![BLE1](./img/BLE1.png)
@@ -254,7 +282,7 @@
 
 ## `关于开源`
 
-- 这次 `DIY` 是目前花的时间和精力最多的一次，所以暂时只开放软件部分，硬件部分的开源会在后期更新，大家也可以参考我其他项目[S6in1](https://github.com/liwei19920307/S6in1)，和这个[红外遥控外壳](https://detail.1688.com/offer/653134990795.html)自行 `DIY`，时间精力花了不少希望大家理解
+- 这次 `DIY` 是目前花的时间和精力最多的一次，禁止商用和私自销售，请尊重原创，大家也可以参考我其他项目[S6in1](https://github.com/liwei19920307/S6in1)，和这个[红外遥控外壳](https://detail.1688.com/offer/653134990795.html)自行 `DIY`，时间精力花了不少希望大家理解
 
 - ！！！转载请注明出处 ！！！
 
