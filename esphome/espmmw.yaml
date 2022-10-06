@@ -10,6 +10,13 @@ esphome:
     board_build.flash_mode: dio
   includes:
     - LD2410.h
+  on_boot:
+    - priority: 600
+      then:
+        - esp32_ble_tracker.stop_scan:
+    - priority: 200
+      then:
+        - esp32_ble_tracker.start_scan:
 
 esp32:
   board: esp32-c3-devkitm-1
