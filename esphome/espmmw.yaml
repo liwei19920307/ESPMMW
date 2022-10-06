@@ -14,7 +14,7 @@ esphome:
     - priority: 600
       then:
         - esp32_ble_tracker.stop_scan:
-    - priority: 200
+    - priority: 250
       then:
         - esp32_ble_tracker.start_scan:
 
