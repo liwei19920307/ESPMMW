@@ -113,7 +113,7 @@
     services:
 
       esphome:
-        image: esphome/esphome:2022.8.0
+        image: esphome/esphome:2022.9.4
         container_name: esphome
         volumes:
           - /etc/localtime:/etc/localtime:ro
