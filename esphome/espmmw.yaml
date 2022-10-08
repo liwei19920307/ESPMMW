@@ -10,13 +10,6 @@ esphome:
     board_build.flash_mode: dio
   includes:
     - LD2410.h
-  on_boot:
-    - priority: 600
-      then:
-        - esp32_ble_tracker.stop_scan:
-    - priority: 250
-      then:
-        - esp32_ble_tracker.start_scan:
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -41,11 +34,10 @@ web_server:
 
 esp32_ble_tracker:
   scan_parameters:
-    interval: 1100ms
-    window: 1100ms
     active: true
 
 bluetooth_proxy:
+  active: true
 
 uart:
   id: uart_bus
@@ -136,7 +128,7 @@ button:
       - uart.write: !lambda return id(defaut_distance);
       - uart.write: !lambda return id(defaut_sensitivity);
       - delay: !lambda return id(uart_delay);
-      - uart.write: !lambda return id(end);
+      - uart.write: !lambda return id(reboot);
   - platform: template
     id: ${device_name}_reboot_mmw
     name: ${device_name}_reboot_mmw
@@ -349,6 +341,10 @@ sensor:
     unit_of_measurement: °C
     device_class: temperature
     lambda: return temperatureRead();
+    filters:
+      - median:
+          window_size: 3
+          send_every: 3
   - platform: template
     id: ${device_name}_move_distance
     name: ${device_name}_move_distance
