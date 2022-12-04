@@ -1,0 +1,481 @@
+substitutions:
+  device_name: espmmw
+
+esphome:
+  name: ${device_name}
+  platformio_options:
+    platform: https://github.com/tasmota/platform-espressif32.git#Tasmota/203
+    platform_packages:
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.3
+    board_build.flash_mode: dio
+  includes:
+    - XRA2413MT.h
+
+external_components:
+  - source: github://liwei19920307/remote_receiver
+    components: [remote_receiver]
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: on
+
+web_server:
+  port: 80
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+uart:
+  id: uart_bus
+  rx_pin: 5
+  tx_pin: 6
+  baud_rate: 256000
+  data_bits: 8
+  stop_bits: 1
+
+globals:
+  - id: uart_delay
+    type: int
+    restore_value: true
+    initial_value: "100"
+  - id: start
+    type: std::vector<unsigned char>
+    restore_value: false
+    initial_value: "{0xFD, 0xFC, 0xFB, 0xFA, 0x04, 0x00, 0xFF, 0x00, 0x01, 0x00, 0x04, 0x03, 0x02, 0x01}"
+  - id: end
+    type: std::vector<unsigned char>
+    restore_value: false
+    initial_value: "{0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x02, 0x01}"
+  - id: conf
+    type: std::vector<unsigned char>
+    restore_value: false
+    initial_value: "{0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x61, 0x00, 0x04, 0x03, 0x02, 0x01}"
+  - id: defaut_distance
+    type: std::vector<unsigned char>
+    restore_value: false
+    initial_value: "{0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x60, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, 0x00, 0x06, 0x00, 0x00, 0x00, 0x02, 0x00, 0x05, 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01}"
+  - id: defaut_sensitivity
+    type: std::vector<unsigned char>
+    restore_value: false
+    initial_value: "{0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x64, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x01, 0x00, 0x63, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01}"
+  - id: max_move_distance
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: max_static_distance
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: unattended_duration
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: move_sensitivity
+    type: int
+    restore_value: true
+    initial_value: "0"
+  - id: static_sensitivity
+    type: int
+    restore_value: true
+    initial_value: "0"
+
+button:
+  - platform: restart
+    name: ${device_name}_reboot
+  - platform: template
+    id: ${device_name}_get_conf
+    name: ${device_name}_get_conf
+    on_press:
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(conf);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    id: ${device_name}_reset_mmw
+    name: ${device_name}_reset_mmw
+    on_press:
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(defaut_distance);
+      - uart.write: !lambda return id(defaut_sensitivity);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    name: ${device_name}_tv_on_off
+    on_press:
+      - remote_transmitter.transmit_raw:
+          carrier_frequency: 38kHz
+          code:
+            [
+              9045,
+              -4500,
+              585,
+              -520,
+              578,
+              -527,
+              580,
+              -525,
+              578,
+              -527,
+              586,
+              -518,
+              579,
+              -525,
+              580,
+              -525,
+              585,
+              -519,
+              569,
+              -1641,
+              583,
+              -1626,
+              585,
+              -1624,
+              580,
+              -1628,
+              586,
+              -1677,
+              579,
+              -1630,
+              580,
+              -526,
+              583,
+              -1625,
+              586,
+              -1623,
+              586,
+              -519,
+              586,
+              -1622,
+              582,
+              -1628,
+              587,
+              -518,
+              580,
+              -524,
+              585,
+              -520,
+              586,
+              -519,
+              584,
+              -520,
+              585,
+              -1650,
+              584,
+              -521,
+              588,
+              -517,
+              580,
+              -1630,
+              584,
+              -1624,
+              585,
+              -1624,
+              586,
+              -1623,
+              585,
+            ]
+
+number:
+  - platform: template
+    id: ${device_name}_max_move_distance
+    name: ${device_name}_max_move_distance
+    optimistic: true
+    min_value: 2
+    max_value: 6
+    step: 1
+    unit_of_measurement: x 0.75m
+    set_action:
+      - globals.set:
+          id: max_move_distance
+          value: !lambda return x;
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x60, 0x00, 0x00, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x01, 0x00, (unsigned char)id(max_static_distance), 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)id(unattended_duration), 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    id: ${device_name}_max_static_distance
+    name: ${device_name}_max_static_distance
+    optimistic: true
+    min_value: 2
+    max_value: 6
+    step: 1
+    unit_of_measurement: x 0.75m
+    set_action:
+      - globals.set:
+          id: max_static_distance
+          value: !lambda return x;
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x60, 0x00, 0x00, 0x00, (unsigned char)id(max_move_distance), 0x00, 0x00, 0x00, 0x01, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)id(unattended_duration), 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    id: ${device_name}_unattended_duration
+    name: ${device_name}_unattended_duration
+    optimistic: true
+    min_value: 0
+    max_value: 600
+    step: 1
+    mode: box
+    unit_of_measurement: s
+    set_action:
+      - globals.set:
+          id: unattended_duration
+          value: !lambda return x;
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x60, 0x00, 0x00, 0x00, (unsigned char)id(max_move_distance), 0x00, 0x00, 0x00, 0x01, 0x00, (unsigned char)id(max_static_distance), 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    id: ${device_name}_move_sensitivity
+    name: ${device_name}_move_sensitivity
+    optimistic: true
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: box
+    set_action:
+      - globals.set:
+          id: move_sensitivity
+          value: !lambda return x;
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x64, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x01, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)id(static_sensitivity), 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+  - platform: template
+    id: ${device_name}_static_sensitivity
+    name: ${device_name}_static_sensitivity
+    optimistic: true
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: box
+    set_action:
+      - globals.set:
+          id: static_sensitivity
+          value: !lambda return x;
+      - uart.write: !lambda return id(start);
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return {0xFD, 0xFC, 0xFB, 0xFA, 0x14, 0x00, 0x64, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x01, 0x00, (unsigned char)id(move_sensitivity), 0x00, 0x00, 0x00, 0x02, 0x00, (unsigned char)x, 0x00, 0x00, 0x00, 0x04, 0x03, 0x02, 0x01};
+      - delay: !lambda return id(uart_delay);
+      - uart.write: !lambda return id(end);
+
+binary_sensor:
+  - platform: gpio
+    pin: 4
+    id: ${device_name}_mmw
+    name: ${device_name}_mmw
+    device_class: occupancy
+  - platform: gpio
+    pin:
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: ${device_name}_button
+    on_press:
+      then:
+        - button.press: ${device_name}_reset_mmw
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_1
+    nec:
+      address: 0xFF00
+      command: 0xBA45
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_2
+    nec:
+      address: 0xFF00
+      command: 0xB946
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_3
+    nec:
+      address: 0xFF00
+      command: 0xB847
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_4
+    nec:
+      address: 0xFF00
+      command: 0xBB44
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_5
+    nec:
+      address: 0xFF00
+      command: 0xBF40
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_6
+    nec:
+      address: 0xFF00
+      command: 0xBC43
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_7
+    nec:
+      address: 0xFF00
+      command: 0xF807
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_8
+    nec:
+      address: 0xFF00
+      command: 0xEA15
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_9
+    nec:
+      address: 0xFF00
+      command: 0xF609
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_0
+    nec:
+      address: 0xFF00
+      command: 0xE619
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_*
+    nec:
+      address: 0xFF00
+      command: 0xE916
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_#
+    nec:
+      address: 0xFF00
+      command: 0xF20D
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_u
+    nec:
+      address: 0xFF00
+      command: 0xE718
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_d
+    nec:
+      address: 0xFF00
+      command: 0xAD52
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_l
+    nec:
+      address: 0xFF00
+      command: 0xF708
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_r
+    nec:
+      address: 0xFF00
+      command: 0xA55A
+  - platform: remote_receiver
+    name: ${device_name}_rr_b_ok
+    nec:
+      address: 0xFF00
+      command: 0xE31C
+
+sensor:
+  - platform: uptime
+    name: ${device_name}_uptime
+  - platform: wifi_signal
+    name: ${device_name}_signal
+    update_interval: 60s
+  - platform: adc
+    pin: 3
+    name: ${device_name}_brightness
+    attenuation: 11db
+    update_interval: 5s
+    unit_of_measurement: "%"
+    icon: mdi:brightness-6
+    accuracy_decimals: 0
+    filters:
+      - lambda: |-
+          return ( 3 - x ) / 0.03;
+  - platform: template
+    id: ${device_name}_cpu_temprature
+    name: ${device_name}_cpu_temprature
+    unit_of_measurement: °C
+    device_class: temperature
+    lambda: return temperatureRead();
+    filters:
+      - median:
+          window_size: 3
+          send_every: 3
+  - platform: custom
+    lambda: |-
+      auto xra2413mt = new XRA2413MT(id(uart_bus));
+      App.register_component(xra2413mt);
+      return {xra2413mt->max_move_distance_sensor, 
+      xra2413mt->max_static_distance_sensor,
+      xra2413mt->unattended_duration_sensor,
+      xra2413mt->move_sensitivity_sensor,
+      xra2413mt->static_sensitivity_sensor};
+    sensors:
+      - name: max_move_distance_sensor
+        internal: true
+        on_value:
+          then:
+            - number.set:
+                id: ${device_name}_max_move_distance
+                value: !lambda return x;
+      - name: max_static_distance_sensor
+        internal: true
+        on_value:
+          then:
+            - number.set:
+                id: ${device_name}_max_static_distance
+                value: !lambda return x;
+      - name: unattended_duration_sensor
+        internal: true
+        on_value:
+          then:
+            - number.set:
+                id: ${device_name}_unattended_duration
+                value: !lambda return x;
+      - name: move_sensitivity_sensor
+        internal: true
+        on_value:
+          then:
+            - number.set:
+                id: ${device_name}_move_sensitivity
+                value: !lambda return x;
+      - name: static_sensitivity_sensor
+        internal: true
+        on_value:
+          then:
+            - number.set:
+                id: ${device_name}_static_sensitivity
+                value: !lambda return x;
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip
+    mac_address:
+      name: ${device_name}_mac
+  - platform: template
+    id: ${device_name}_mmw_status
+    name: ${device_name}_mmw_status
+
+remote_transmitter:
+  pin: 1
+  carrier_duty_percent: 50%
+
+remote_receiver:
+  pin:
+    number: 0
+    inverted: true
+  rmt_channel: 2
+  dump: all
