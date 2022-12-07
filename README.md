@@ -34,7 +34,7 @@
 | 0603 贴片电阻 10KΩ 10 千欧 1/10W 精度 ±1% |              |    3 |     R2 / R3 / R4     | [购买](https://item.taobao.com/item.htm?id=525777943950)  |
 | 直插固态电解电容 1000uF 6.3V 6.3\*11.5mm  |              |    1 |          C1          | [购买](https://item.taobao.com/item.htm?id=610051037283)  |
 | 1206 贴片电容 4.7UF                       |              |    1 |          C2          | [购买](https://item.taobao.com/item.htm?id=522554031501)  |
-| 2.54mm 间距 单排母                        | 2.54mm-1\*5P |    1 |      X-RA2413MT      | [购买](https://item.taobao.com/item.htm?id=578467867387)  |
+| 2.54mm 间距 单排母                        | 2.54mm-1\*5P 单排母5.0塑高！！！ |    1 |      X-RA2413MT      | [购买](https://item.taobao.com/item.htm?id=578467867387)  |
 | 贴片 USB-3.1 插座 Type-C 母座 16P         |              |    1 |        TYPE-C        | [购买](https://item.taobao.com/item.htm?id=573090887123)  |
 | 直插 6\*6 轻触开关                        | 5、0 高      |    1 |        BUTTON        |  [购买](https://item.taobao.com/item.htm?id=36605575136)  |
 | 红外转发器外壳                            |              |    1 |          -           |  [购买](https://detail.1688.com/offer/653134990795.html)  |
