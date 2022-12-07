@@ -114,7 +114,7 @@
     services:
 
       esphome:
-        image: esphome/esphome:2022.11.4
+        image: esphome/esphome:2022.11.5
         container_name: esphome
         volumes:
           - /etc/localtime:/etc/localtime:ro
@@ -135,11 +135,29 @@
 
   4、打开 `esphome` 的页面 `http://IP:6052`，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/esphome)的配置粘贴上去，按需修改后保存
 
-  5、将毫米波通过数据线插入服务器
+  5、`docker` 服务器执行如下命令进入 `esphome` 的 `docker` 内部
 
-  6、编译并刷入
-  
-  ![COMPILE](./img/COMPILE.gif)
+  ```
+  docker exec -it esphome bash
+  ```
+
+  6、设置 https 代理（这部比较重要，编译需要从`git`下载依赖）
+
+  ```
+  export https_proxy=http://IP:PORT
+  ```
+
+  7、将毫米波通过数据线插入服务器
+
+  8、执行编译并刷入
+
+  ```
+  esphome run espmmw.yaml
+  ```
+
+  `Windows`
+
+  将编译的固件放入[flash_tool](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/flash_tool)，按说明操作
   
   7、接入`HASS`
   
