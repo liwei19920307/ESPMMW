@@ -3,11 +3,6 @@ substitutions:
 
 esphome:
   name: ${device_name}
-  platformio_options:
-    platform: https://github.com/tasmota/platform-espressif32.git#Tasmota/203
-    platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.3
-    board_build.flash_mode: dio
   includes:
     - XRA2413MT.h
 
@@ -19,6 +14,8 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: arduino
+    version: 2.0.5
+    platform_version: 5.2.0
 
 logger:
 
@@ -305,86 +302,6 @@ binary_sensor:
     nec:
       address: 0xFF00
       command: 0xBA45
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_2
-    nec:
-      address: 0xFF00
-      command: 0xB946
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_3
-    nec:
-      address: 0xFF00
-      command: 0xB847
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_4
-    nec:
-      address: 0xFF00
-      command: 0xBB44
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_5
-    nec:
-      address: 0xFF00
-      command: 0xBF40
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_6
-    nec:
-      address: 0xFF00
-      command: 0xBC43
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_7
-    nec:
-      address: 0xFF00
-      command: 0xF807
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_8
-    nec:
-      address: 0xFF00
-      command: 0xEA15
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_9
-    nec:
-      address: 0xFF00
-      command: 0xF609
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_0
-    nec:
-      address: 0xFF00
-      command: 0xE619
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_*
-    nec:
-      address: 0xFF00
-      command: 0xE916
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_#
-    nec:
-      address: 0xFF00
-      command: 0xF20D
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_u
-    nec:
-      address: 0xFF00
-      command: 0xE718
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_d
-    nec:
-      address: 0xFF00
-      command: 0xAD52
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_l
-    nec:
-      address: 0xFF00
-      command: 0xF708
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_r
-    nec:
-      address: 0xFF00
-      command: 0xA55A
-  - platform: remote_receiver
-    name: ${device_name}_rr_b_ok
-    nec:
-      address: 0xFF00
-      command: 0xE31C
 
 sensor:
   - platform: uptime
@@ -413,6 +330,20 @@ sensor:
       - median:
           window_size: 3
           send_every: 3
+  - platform: template
+    id: ${device_name}_move_distance
+    name: ${device_name}_move_distance
+    unit_of_measurement: "cm"
+  - platform: template
+    id: ${device_name}_move_energy
+    name: ${device_name}_move_energy
+  - platform: template
+    id: ${device_name}_static_distance
+    name: ${device_name}_static_distance
+    unit_of_measurement: "cm"
+  - platform: template
+    id: ${device_name}_static_energy
+    name: ${device_name}_static_energy
   - platform: custom
     lambda: |-
       auto xra2413mt = new XRA2413MT(id(uart_bus));
@@ -421,7 +352,12 @@ sensor:
       xra2413mt->max_static_distance_sensor,
       xra2413mt->unattended_duration_sensor,
       xra2413mt->move_sensitivity_sensor,
-      xra2413mt->static_sensitivity_sensor};
+      xra2413mt->static_sensitivity_sensor,
+      xra2413mt->status_sensor,
+      xra2413mt->move_distance_sensor,
+      xra2413mt->move_energy_sensor,
+      xra2413mt->static_distance_sensor,
+      xra2413mt->static_energy_sensor};
     sensors:
       - name: max_move_distance_sensor
         internal: true
@@ -458,6 +394,48 @@ sensor:
             - number.set:
                 id: ${device_name}_static_sensitivity
                 value: !lambda return x;
+      - name: status_sensor
+        internal: true
+        filters:
+          - lambda: |-
+              if (x ==0) {
+                id(${device_name}_mmw_status).publish_state("OFF");
+              } else if (x ==1) {
+                id(${device_name}_mmw_status).publish_state("MOVE");
+              } else if (x ==2) {
+                id(${device_name}_mmw_status).publish_state("STATIC");
+              }else {
+                id(${device_name}_mmw_status).publish_state("ON");
+              }
+              return x;
+      - name: move_distance_sensor
+        internal: true
+        on_value:
+          then:
+            - sensor.template.publish:
+                id: ${device_name}_move_distance
+                state: !lambda return x;
+      - name: move_energy_sensor
+        internal: true
+        on_value:
+          then:
+            - sensor.template.publish:
+                id: ${device_name}_move_energy
+                state: !lambda return x;
+      - name: static_distance_sensor
+        internal: true
+        on_value:
+          then:
+            - sensor.template.publish:
+                id: ${device_name}_static_distance
+                state: !lambda return x;
+      - name: static_energy_sensor
+        internal: true
+        on_value:
+          then:
+            - sensor.template.publish:
+                id: ${device_name}_static_energy
+                state: !lambda return x;
 
 text_sensor:
   - platform: wifi_info
