@@ -28,7 +28,7 @@
 | VS/HX1838/PC638 红外接收头                |              |    1 |        HX1838        | [购买](https://item.taobao.com/item.htm?id=522552967131)  |
 | 3MM 940nm 红外发射管                      |              |    2 |       LA / LB        | [购买](https://item.taobao.com/item.htm?id=522572541770)  |
 | 光敏电阻 5516                             |              |    1 |        GL5516        | [购买](https://item.taobao.com/item.htm?id=522556415238)  |
-| ME1117A33B3G 线性稳压器                   |              |    1 |        1117-3        | [购买](https://item.taobao.com/item.htm?id=672590753429)  |
+| ME1117A33B3G 线性稳压器                   |              |    1 |        1117-3        | [购买](https://item.taobao.com/item.htm?id=645921052512)  |
 | ESP32-C3-WROOM-02-H4 模块                 |              |    1 | ESP32-C3-WROOM-02-H4 | [购买](https://item.taobao.com/item.htm?id=672590753429)  |
 | 贴片 S8050 J3Y 贴片三极管 500MA SOT-23    |              |    1 |         J3Y          | [购买](https://item.taobao.com/item.htm?id=522577964105)  |
 | 0603 贴片电阻 1MΩ 1 兆欧 1/10W 精度 ±1%   |              |    1 |          R1          | [购买](https://item.taobao.com/item.htm?id=525898476191)  |
