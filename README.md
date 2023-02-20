@@ -2,11 +2,9 @@
 
 ## `简介`
 
+讨论群: `810581215`
+
 ![ESPMMW-X](./img/ESPMMW-X.png)
-
-# `转载注明出处，请尊重原创`
-
-### 讨论群： 810581215
 
 ### 雷达特点：
 
@@ -14,14 +12,17 @@
 - 支持磁吸底座
 - 多功能：人体存在，距离调节，呼吸检测，环境亮度，红外遥控（支持收发，自定义功能），蓝牙网关（测试过[米家低功耗](https://esphome.io/components/sensor/xiaomi_ble.html)）
 - 方便二次开发：`TYPE-C` 接口，支持串口调试（[USB Serial/JTAG](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-guides/usb-serial-jtag-console.html)）
-- 成本低廉（总体硬件成本 `50` 左右）
+- 成本低廉（总体硬件成本 `60` 左右）
 - 稳定性极好
 - 主控 `ESP32C3`
   ![SLEEP](./img/SLEEP.png)
 
 ### 材料清单
+
 ！！！单排母一定要选5.0塑高的 ！！！
+
   ![PIN](./img/PIN.png)
+
 用剪刀减去针脚1mm左右方便插入底座，为什么要这么折腾，实验出来的，否则雷达和壳贴的太近会影响雷达工作
 
 | 名称                                      | 型号         | 数量 |       PCB 标注       |                           链接                            |
@@ -55,7 +56,7 @@
 - 动静距离显示，能量显示
 - 动静灵敏度调节
 - 动静距离调节
-- `ESP32` 状态显示（`IP，MAC，CPU` 温度，运行时间）
+- `ESP32` 状态显示（`IP、MAC、CPU` 温度，运行时间）
 - 蓝牙代理
 - 红外收发
 - OTA
@@ -104,6 +105,8 @@
 ## `教程`
 
 - 编译和刷机接入`HASS`
+  
+  `esphome`安装的根据自己环境来，以下是我自己安装方式，尽量装最新版本
 
   `Linux` （ 以下是在 `x86` 的 `Ubuntu` 下操作的，其他 `Linux` 类似，不支持 `ARM` ）
 
@@ -116,7 +119,7 @@
     services:
 
       esphome:
-        image: esphome/esphome:2022.11.5
+        image: esphome/esphome:latest
         container_name: esphome
         volumes:
           - /etc/localtime:/etc/localtime:ro
@@ -135,7 +138,7 @@
   docker-compose -f docker-compose.yml up -d
   ```
 
-  4、打开 `esphome` 的页面 `http://IP:6052`，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/esphome)的配置粘贴上去，按需修改后保存
+  4、打开 `esphome` 的页面 `http://IP:6052`，新增 `espmmw` 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/esphome)的配置粘贴上去，按需修改后保存，`mini`文件夹内是自用精简版本，去除了一些无用的距离信息，只保留参数调节
 
   5、`docker` 服务器执行如下命令进入 `esphome` 的 `docker` 内部
 
@@ -196,11 +199,11 @@
 
   ```yml
   remote_receiver:
-  pin:
-    number: 0
-    inverted: true
-  rmt_channel: 2
-  dump: all
+    pin:
+      number: 0
+      inverted: true
+    rmt_channel: 2
+    dump: all
   ```
 
   发 RAW 码
@@ -209,19 +212,22 @@
 
   ```yml
   remote_transmitter:
-  pin: 1
-  carrier_duty_percent: 50%
+    pin: 1
+    carrier_duty_percent: 50%
 
-  - platform: template
-    name: ${device_name}_tv_on_off
-    on_press:
-      - remote_transmitter.transmit_raw:
-          carrier_frequency: 38kHz
-          code:
-            [#这里放入日志中打印的RAW码]
-  ```
+  button:
+    - platform: template
+      name: ${device_name}_tv_on_off
+      on_press:
+        - remote_transmitter.transmit_raw:
+            carrier_frequency: 38kHz
+            code:
+              [#这里放入日志中打印的RAW码]
+    ```
 
 - 蓝牙网关
+
+  目前蓝牙网关相关功能还有问题不建议用， 蓝牙的`2.4G`和`WiFi`的`2.4G`有会干扰，建议长期测试再使用
 
   直接采集
 
@@ -256,12 +262,30 @@
   `ESPHOME`配置添加
 
   ```yml
+  esphome:
+    name: ${device_name}
+    on_boot:
+      - priority: 600
+        then:
+          - esp32_ble_tracker.stop_scan:
+
   esp32_ble_tracker:
-  scan_parameters:
-    active: true
+    scan_parameters:
+      interval: 1100ms
+      window: 1100ms
 
   bluetooth_proxy:
-  active: true
+    active: true
+
+  time:
+    - platform: sntp
+      on_time:
+        # Every 1 minutes
+        - seconds: 0
+          minutes: /1
+          then:
+            - esp32_ble_tracker.start_scan:
+
   ```
 
   ![BLE1](./img/BLE1.png)
