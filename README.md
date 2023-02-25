@@ -108,7 +108,7 @@
   
   `esphome`安装的根据自己环境来，以下是我自己安装方式，尽量装最新版本
 
-  `Linux` （ 以下是在 `x86` 的 `Ubuntu` 下操作的，其他 `Linux` 类似，不支持 `ARM` ）
+  `Linux` （ 以下是在 `x86` 的 `Ubuntu` 下操作的，其他 `Linux` 类似）
 
   1、[安装 docker 及 docker-compose](https://www.bilibili.com/video/BV1vv4y1c7iQ/)
 
