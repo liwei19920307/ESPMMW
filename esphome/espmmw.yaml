@@ -312,16 +312,9 @@ sensor:
     filters:
       - lambda: |-
           return ( 3 - x ) / 0.03;
-  - platform: template
-    id: ${device_name}_cpu_temprature
+  - platform: internal_temperature
+    id: ${device_name}_cpu_temprature 
     name: ${device_name}_cpu_temprature
-    unit_of_measurement: °C
-    device_class: temperature
-    lambda: return temperatureRead();
-    filters:
-      - median:
-          window_size: 3
-          send_every: 3
   - platform: template
     id: ${device_name}_move_distance
     name: ${device_name}_move_distance
