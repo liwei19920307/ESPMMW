@@ -302,6 +302,11 @@
 - 无法 `api` 调用红外发射（软件 `BUG` 等待`ESPHOME`修复）
 - You tell me
 
+## `购买`
+
+- 强烈建议自己DIY
+- 如果真的需要，淘宝[购买](https://item.taobao.com/item.htm?id=677669621322)
+
 ## `细节`
 
 ![MMW1](./img/MMW1.jpg)
