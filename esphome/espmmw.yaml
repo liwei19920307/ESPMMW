@@ -5,6 +5,9 @@ esphome:
   name: ${device_name}
   includes:
     - XRA2413MT.h
+  platformio_options:
+    board_build.extra_flags:
+      - "-include \"/config/fix_api_remote_transmitter.h\""
 
 external_components:
   - source: github://liwei19920307/remote_receiver
@@ -20,6 +23,15 @@ logger:
 api:
   encryption: 
     key: !secret api_encryption_key
+  services:
+    - service: send_raw_command
+      variables:
+        command: int[]
+      then:
+        - delay: 1s
+        - remote_transmitter.transmit_raw:
+            code: !lambda 'return command;'
+            carrier_frequency: 38kHz
 
 ota:
   password: !secret ota_password
