@@ -116,7 +116,7 @@
 
   ```yml
   version: "3"
-    services:
+  services:
 
       esphome:
         image: esphome/esphome:latest
