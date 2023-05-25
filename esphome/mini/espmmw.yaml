@@ -295,3 +295,14 @@ text_sensor:
       name: ${device_name}_ip
     mac_address:
       name: ${device_name}_mac
+      
+remote_transmitter:
+  pin: 1
+  carrier_duty_percent: 50%
+
+remote_receiver:
+  pin:
+    number: 0
+    inverted: true
+  rmt_channel: 2
+  dump: all
