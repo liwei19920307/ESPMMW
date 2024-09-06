@@ -3,9 +3,7 @@ import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.const import (
     DEVICE_CLASS_DISTANCE,
-    ICON_MOTION_SENSOR,
     ICON_TIMELAPSE,
-    ICON_SCALE,
     UNIT_METER,
     UNIT_PERCENT,
     UNIT_SECOND,
@@ -33,7 +31,7 @@ CONFIG_SCHEMA = cv.Schema(
             MaxMoveDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             unit_of_measurement=UNIT_METER,
-            icon=ICON_MOTION_SENSOR,
+            icon="mdi:map-marker-distance",
         ).extend(
             {
                 cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(
@@ -45,7 +43,7 @@ CONFIG_SCHEMA = cv.Schema(
             MaxStaticDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             unit_of_measurement=UNIT_METER,
-            icon=ICON_MOTION_SENSOR,
+            icon="mdi:map-marker-distance",
         ).extend(
             {
                 cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(
@@ -55,9 +53,8 @@ CONFIG_SCHEMA = cv.Schema(
         ),
         cv.Optional(CONF_MOVE_SENSITIVITYE): number.number_schema(
             MoveSensitivityNumber,
-            device_class=DEVICE_CLASS_DISTANCE,
             unit_of_measurement=UNIT_PERCENT,
-            icon=ICON_SCALE,
+            icon="mdi:run",
         ).extend(
             {
                 cv.Optional(CONF_DEFAULT, default=99): cv.float_range(min=0, max=100),
@@ -65,9 +62,8 @@ CONFIG_SCHEMA = cv.Schema(
         ),
         cv.Optional(CONF_STATIC_SENSITIVITY): number.number_schema(
             StaticSensitivityNumber,
-            device_class=DEVICE_CLASS_DISTANCE,
             unit_of_measurement=UNIT_PERCENT,
-            icon=ICON_SCALE,
+            icon="mdi:run",
         ).extend(
             {
                 cv.Optional(CONF_DEFAULT, default=99): cv.float_range(min=0, max=100),

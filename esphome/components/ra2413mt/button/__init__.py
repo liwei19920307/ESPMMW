@@ -18,13 +18,11 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(CONF_RA2413MT_ID): cv.use_id(RA2413MTComponent),
         cv.Optional(CONF_GET_CONF): button.button_schema(
             GetConfButton,
-            device_class=DEVICE_CLASS_RESTART,
-            icon=ICON_RESTART_ALERT,
+            icon="mdi:text-box-search-outline",
         ),
         cv.Optional(CONF_RESET_CONF): button.button_schema(
             RestConfButton,
-            device_class=DEVICE_CLASS_RESTART,
-            icon=ICON_RESTART_ALERT,
+            icon="mdi:text-box-check-outline",
         ),
     }
 )
