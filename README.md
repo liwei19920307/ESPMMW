@@ -41,36 +41,6 @@
 | 4    | 毫米波状态     |
 | 5、6 | 毫米波串口     |
 
-### ESPHOME 含义
-
-![ESPHOME](./img/ESPHOME.png)
-
-| 组件                       | 含义                                                          |
-| -------------------------- | ------------------------------------------------------------- |
-| espmmw_brightness          | 环境亮度                                                      |
-| espmmw_button              | 毫米波背后按钮                                                |
-| espmmw_cpu_temprature      | CPU 温度                                                      |
-| espmmw_get_conf            | 获取当前毫米波配置                                            |
-| espmmw_ip                  | IP                                                            |
-| espmmw_mac                 | MAC                                                           |
-| espmmw_max_move_distance   | 最大移动距离调节（最大距离=n\*0.75 米）                       |
-| espmmw_max_static_distance | 最大静止距离调节 （最大距离=n\*0.75 米）                      |
-| espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人）态                             |
-| espmmw_mmw_status          | 毫米波状态（OFF-关闭，MOVE-运动，STATIC-静止，ON 运动或静止） |
-| espmmw_move_distance       | 当前运动距离                                                  |
-| espmmw_move_energy         | 当前运动能量值                                                |
-| espmmw_move_sensitivity    | 移动灵敏度调节                                                |
-| espmmw_reboot              | 重启 esp                                                      |
-| espmmw_reset_mmw           | 重置毫米波设置                                                |
-| espmmw_rr_b_1              | 红外接收 demo                                                 |
-| espmmw_signal              | WiFi 信号强度                                                 |
-| espmmw_static_distance     | 当前静止距离                                                  |
-| espmmw_static_energy       | 当前静止能量值                                                |
-| espmmw_static_sensitivity  | 静止灵敏度调节                                                |
-| espmmw_tv_on_off           | 红外发送 demo                                                 |
-| espmmw_unattended_duration | 无人持续时间调节                                              |
-| espmmw_uptime              | 运行时间                                                      |
-
 ## DIY 步骤
 
 打板(板厚选 1mm)-->焊接-->组装-->刷机
@@ -97,81 +67,292 @@
 | 304 不锈钢平头自攻螺丝                    | M1.7\*6                            |    3 |    外壳商家也会送    | [购买](https://detail.tmall.com/item.htm?id=529579107673) |
 | 车载磁吸出风口手机支架                    |                                    |    1 |          -           |  [购买](https://detail.1688.com/offer/632680243184.html)  |
 
-## 教程
+## ESPHome
 
-### 编译和刷机接入 HASS
+- 配置
 
-esphome 安装的根据自己环境来，以下是我自己安装方式，尽量装最新版本
+  ```yml
+  substitutions:
+    device_name: master_espmmw
 
-- Linux （ 以下是在 x86 的 Ubuntu 下操作的，其他 Linux 类似）
+  esphome:
+    name: ${device_name}
 
-  1. [安装 docker 及 docker-compose](https://www.bilibili.com/video/BV1vv4y1c7iQ/)
+  esp32:
+    board: esp32-c3-devkitm-1
+    framework:
+      type: arduino
 
-  2. docker-compose.yml 文件增加如下内容
+  external_components:
+    - source: github://liwei19920307/ESPMMW
+      components: [ra2413mt]
 
-     ```yml
-     version: "3"
-     services:
-       esphome:
-         image: esphome/esphome:latest
-         container_name: esphome
-         volumes:
-           - /etc/localtime:/etc/localtime:ro
-           - /opt/esphome/conf:/config
-           - /dev:/dev
-         environment:
-           - TZ=Asia/Shanghai
-         network_mode: host
-         restart: always
-         privileged: true
-     ```
+  logger:
+    level: debug
 
-  3. 安装 esphome 的 docker
+  debug:
+    update_interval: 5s
 
-     ```bash
-     docker-compose -f docker-compose.yml up -d
-     ```
+  api:
+    encryption:
+      key: !secret api_encryption_key
 
-  4. 打开 esphome 的页面 http://IP:6052，新增 espmmw 的配置文件，编辑配置文件删除全部，将文件夹[esphme](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/esphome)的配置粘贴上去，按需修改后保存，mini 文件夹内是自用精简版本，去除了一些无用的距离信息，只保留参数调节
+  ota:
+    - platform: esphome
+      password: !secret ota_password
 
-  5. docker 服务器执行如下命令进入 esphome 的 docker 内部
+  wifi:
+    ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    fast_connect: on
 
-     ```bash
-     docker exec -it esphome bash
-     ```
+  web_server:
+    port: 80
+    version: 3
+    include_internal: true
 
-  6. 设置 https 代理（这部比较重要，编译需要从 git 下载依赖）
+  uart:
+    - id: ra2413mt_uart
+      rx_pin: 5
+      tx_pin: 6
+      baud_rate: 256000
+      data_bits: 8
+      stop_bits: 1
 
-     ```bash
-     export https_proxy=http://IP:PORT
-     ```
+  ra2413mt:
+    uart_id: ra2413mt_uart
 
-  7. 将毫米波通过数据线插入服务器
+  text_sensor:
+    - platform: wifi_info
+      ip_address:
+        name: ${device_name}_ip
+        icon: mdi:ip-outline
+        internal: true
+      mac_address:
+        name: ${device_name}_mac
+        icon: mdi:map-marker-outline
+        internal: true
 
-  8. 执行编译并刷入
+  binary_sensor:
+    - platform: gpio
+      pin: 4
+      name: ${device_name}_mmw
+      device_class: occupancy
+      icon: mdi:motion-sensor
+    - platform: gpio
+      pin:
+        number: 2
+        mode:
+          input: true
+          pullup: true
+        inverted: true
+      name: ${device_name}_button
+      icon: mdi:radiobox-marked
+      internal: true
+      on_press:
+        then:
+          - button.press: ${device_name}_reset_conf
 
-     ```bash
-     esphome run espmmw.yaml
-     ```
+  sensor:
+    - platform: wifi_signal
+      name: ${device_name}_signal
+      icon: mdi:signal
+      internal: true
+    - platform: debug
+      free:
+        name: ${device_name}_free
+        unit_of_measurement: "KB"
+        internal: true
+        filters:
+          - lambda: |-
+              return x / 1024;
+      block:
+        name: ${device_name}_max_block
+        unit_of_measurement: "KB"
+        internal: true
+        filters:
+          - lambda: |-
+              return x / 1024;
+      loop_time:
+        name: ${device_name}_loop_time
+        internal: true
+    - platform: adc
+      pin: 3
+      name: ${device_name}_brightness
+      attenuation: 11db
+      update_interval: 5s
+      unit_of_measurement: "%"
+      icon: mdi:brightness-6
+      accuracy_decimals: 0
+      filters:
+        - lambda: |-
+            return ( 3 - x ) / 0.03;
+    - platform: internal_temperature
+      name: ${device_name}_cpu_temprature
+      icon: mdi:thermometer
+      internal: true
+    - platform: ra2413mt
+      move_distance:
+        name: ${device_name}_move_distance
+        internal: true
+      move_energy:
+        name: ${device_name}_move_energy
+        internal: true
+      static_distance:
+        name: ${device_name}_static_distance
+        internal: true
+      static_energy:
+        name: ${device_name}_static_energy
+        internal: true
 
-- Windows
+  number:
+    - platform: ra2413mt
+      max_move_distance:
+        name: ${device_name}_max_move_distance
+        default: 4.5
+        internal: true
+      max_static_distance:
+        name: ${device_name}_max_static_distance
+        default: 4.5
+        internal: true
+      move_sensitivity:
+        name: ${device_name}_move_sensitivity
+        default: 99
+        internal: true
+      static_sensitivity:
+        name: ${device_name}_static_sensitivity
+        default: 15
+        internal: true
+      unattended_duration:
+        name: ${device_name}_unattended_duration
+        default: 5
+        internal: true
 
-  将编译的固件放入[flash_tool](https://github.com/liwei19920307/ESPMMW/tree/X-RA2413MT/flash_tool)，按说明操作
+  button:
+    - platform: restart
+      name: ${device_name}_reboot
+      internal: true
+    - platform: ra2413mt
+      get_conf:
+        name: ${device_name}_get_conf
+        internal: true
+      reset_conf:
+        id: ${device_name}_reset_conf
+        name: ${device_name}_reset_conf
+        internal: true
+    - platform: template
+      name: ${device_name}_tv_on_off
+      on_press:
+        - remote_transmitter.transmit_raw:
+            carrier_frequency: 38kHz
+            code:
+              [
+                9045,
+                -4500,
+                585,
+                -520,
+                578,
+                -527,
+                580,
+                -525,
+                578,
+                -527,
+                586,
+                -518,
+                579,
+                -525,
+                580,
+                -525,
+                585,
+                -519,
+                569,
+                -1641,
+                583,
+                -1626,
+                585,
+                -1624,
+                580,
+                -1628,
+                586,
+                -1677,
+                579,
+                -1630,
+                580,
+                -526,
+                583,
+                -1625,
+                586,
+                -1623,
+                586,
+                -519,
+                586,
+                -1622,
+                582,
+                -1628,
+                587,
+                -518,
+                580,
+                -524,
+                585,
+                -520,
+                586,
+                -519,
+                584,
+                -520,
+                585,
+                -1650,
+                584,
+                -521,
+                588,
+                -517,
+                580,
+                -1630,
+                584,
+                -1624,
+                585,
+                -1624,
+                586,
+                -1623,
+                585,
+              ]
 
-  ![HASS](./img/HASS.gif)
+  remote_transmitter:
+    pin: 1
+    carrier_duty_percent: 50%
+
+  remote_receiver:
+    pin:
+      number: 0
+      inverted: true
+    rmt_channel: 2
+    dump: all
+  ```
+
+- 中文含义
+
+  ![ESPHOME](./img/ESPHOME.png)
+
+  | 组件                       | 含义                              |
+  | -------------------------- | --------------------------------- |
+  | espmmw_brightness          | 环境亮度                          |
+  | espmmw_button              | 毫米波背后按钮                    |
+  | espmmw_get_conf            | 获取当前毫米波配置                |
+  | espmmw_max_move_distance   | 最大运动检测距离调节              |
+  | espmmw_max_static_distance | 最大静止检测距离调节              |
+  | espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人）态 |
+  | espmmw_move_distance       | 当前运动物体距离                  |
+  | espmmw_move_energy         | 当前运动物体能量值                |
+  | espmmw_move_sensitivity    | 运动灵敏度调节                    |
+  | espmmw_reset_mmw           | 重置毫米波设置                    |
+  | espmmw_static_distance     | 当前静止物体距离                  |
+  | espmmw_static_energy       | 当前静止物体能量值                |
+  | espmmw_static_sensitivity  | 静止灵敏度调节                    |
+  | master_espmmw_tv_on_off    | 红外遥控 demo                     |
+  | espmmw_unattended_duration | 无人持续时间调节                  |
 
 ### 触发过程
 
 有人无人触发过程
-
-| 组件                       | 含义                            |
-| -------------------------- | ------------------------------- |
-| espmmw_mmw                 | 毫米波状态（ON-有人，OFF-无人） |
-| espmmw_move_energy         | 当前运动能量值                  |
-| espmmw_move_sensitivity    | 移动灵敏度调节                  |
-| espmmw_static_energy       | 当前静止能量值                  |
-| espmmw_static_sensitivity  | 静止灵敏度调节                  |
-| espmmw_unattended_duration | 无人持续时间调节                |
 
 1. 当 espmmw_move_energy 超大于设定的 espmmw_move_sensitivity 时 espmmw_mmw 触发 ON
 
@@ -179,9 +360,9 @@ esphome 安装的根据自己环境来，以下是我自己安装方式，尽量
 
 3. espmmw_mmw 触发 ON 之前都是通过 espmmw_move_energy 的值判断的，一旦触发 ON 后，后面的检测都是通过 espmmw_static_energy 来判断是否 OFF 的
 
-4. 我把 espmmw_move_sensitivity 设置成 99 是为了防止一些轻微的动作误触有人，比如阳台的衣服或者窗帘微动
+4. 把 espmmw_move_sensitivity 设置成 99 是为了防止一些轻微的动作误触有人，比如阳台的衣服或者窗帘微动
 
-5. 我把 espmmw_static_sensitivity 设置成 15 是为了更好的检测呼吸，防止误触无人
+5. 把 espmmw_static_sensitivity 设置成 15 是为了更好的检测呼吸，防止误触无人
 
 6. 实际使用中大家可以根据环境内的 espmmw_static_energy 值来设置，因为有些环境 espmmw_static_energy 就是高于 15 的，我自己家用 15 是没啥问题的，但有些地方调高一点比如阳台，防止衣服微动导致无法触发 espmmw_mmw 的 OFF
 
@@ -221,7 +402,7 @@ esphome 安装的根据自己环境来，以下是我自己安装方式，尽量
 
 - SmartIR
 
-  有空更新，可以先看看[这里](https://github.com/smartHomeHub/SmartIR)
+  看看[这里](https://github.com/smartHomeHub/SmartIR)
 
 ### 蓝牙网关
 
@@ -246,7 +427,7 @@ esphome 安装的根据自己环境来，以下是我自己安装方式，尽量
         name: ${device_name}_mi_battery
   ```
 
-- ESPHOME 代理
+- ESPHOME 蓝牙代理
 
   ESPHOME 和 HA 添加配置后重启，HA 集成里就会出现支持的设备，配置如下
 
