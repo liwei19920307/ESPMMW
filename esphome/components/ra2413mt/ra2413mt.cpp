@@ -68,11 +68,6 @@ namespace esphome
             }
         }
 
-        void RA2413MTComponent::setup()
-        {
-            ESP_LOGD(TAG, "1111111111111111");
-        }
-
         void RA2413MTComponent::dump_config()
         {
             this->send_command(GET_CONF, sizeof(GET_CONF));
