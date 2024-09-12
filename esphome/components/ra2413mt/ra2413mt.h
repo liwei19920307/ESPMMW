@@ -31,7 +31,6 @@ namespace esphome
         {
         public:
             void loop() override;
-            void setup() override;
             void dump_config() override;
             void register_listener(RA2413MTListener *listener);
             int two_byte_to_int(uint8_t firstbyte, uint8_t secondbyte);
