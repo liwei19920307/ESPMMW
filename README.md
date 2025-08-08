@@ -258,7 +258,6 @@
     pin:
       number: 0
       inverted: true
-    rmt_channel: 2
     dump: all
   ```
 
@@ -432,3 +431,4 @@
 ![DEMO2](./img/DEMO2.jpg)
 
 ![DEMO3](./img/DEMO3.jpg)
+
