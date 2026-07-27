@@ -95,7 +95,7 @@ external_components:
     components: [ra2413mt]
 ```
 
-多设备同一固件：开启 `name_add_mac_suffix: true`（主机名 / 热点名形如 `espmmw_x-a1b2c3`）。实体名在编译期固定，靠设备名区分。
+多设备：修改 substitutions 里的 `friendly_name`，以及 `esphome.name`（节点名需全局唯一）。实体名前缀跟随 `friendly_name`。
 
 ### 背后按键
 
@@ -126,7 +126,7 @@ external_components:
 | `espmmw_x_factory_reset` | 恢复出厂（清偏好并重启；长按会先复位雷达） |
 | `espmmw_x_reboot` | 普通重启 |
 
-> 前缀以配置里的 `device_name` 为准；开启 MAC 后缀后，设备名还会带 `-xxxxxx`。
+> 前缀以配置里的 `friendly_name` 为准。
 
 ### 有人 / 无人触发逻辑
 
