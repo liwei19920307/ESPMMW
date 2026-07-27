@@ -99,7 +99,7 @@ script:
       - logger.log: "复位雷达参数后恢复出厂"
       - lambda: id(ra2413mt_hub).reset_config();
       - delay: 2s
-      - button.press: factory_reset_hw
+      - button.press: factory_reset
 
 binary_sensor:
   # 毫米波有人/无人（GPIO 电平）
@@ -265,7 +265,7 @@ button:
       - script.execute: factory_reset_sequence
   # 实际执行清偏好并重启（不单独暴露）
   - platform: factory_reset
-    id: factory_reset_hw
+    id: factory_reset
   - platform: restart
     id: reboot_btn
     name: ${friendly_name}_reboot
