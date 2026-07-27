@@ -93,6 +93,7 @@ external_components:
       ref: X-RA2413MT
       path: esphome/components
     components: [ra2413mt]
+    refresh: 0s   # 每次编译重新拉取；稳定后可改成 1d
 ```
 
 多设备：修改 substitutions 里的 `friendly_name`，以及 `esphome.name`（节点名需全局唯一）。实体名前缀跟随 `friendly_name`。

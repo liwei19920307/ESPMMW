@@ -21,6 +21,8 @@ external_components:
       ref: X-RA2413MT
       path: esphome/components
     components: [ra2413mt]
+    # 每次编译都重新拉取，避免用到缓存的旧组件
+    refresh: 0s
 
 logger:
   level: DEBUG
