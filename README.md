@@ -28,7 +28,7 @@ HACS → 自定义仓库 → `https://github.com/liwei19920307/ESPMMW`（类别 
 
 - 运动 / 静止状态与距离、能量显示（含 Web 滑动条）
 - 灵敏度、检测距离可调
-- 背后按键：短按 30s 后自动灵敏度校准；长按 3s 恢复出厂并重启
+- 背后按键：短按 30s 后自动灵敏度校准；长按 3s 先复位雷达再恢复出厂并重启
 - 多设备同一固件（主机名 / 配网热点自动带 MAC 后缀）
 - IP、MAC、CPU 温度等状态；红外收发、OTA、Web 配网
 - 蓝牙代理（可选，默认关闭）
@@ -102,7 +102,7 @@ external_components:
 | 操作 | 行为 |
 | ---- | ---- |
 | 短按（&lt;1s） | 30 秒后自动灵敏度校准（保持房间无人；再短按会重新计时） |
-| 长按（3s–30s） | `factory_reset`：清除 flash 偏好（含配网）并重启，需重新配网 |
+| 长按（3s–30s） | 先将雷达参数恢复 YAML 默认，再 `factory_reset`（清偏好并重启，需重新配网） |
 
 ### 实体含义
 
@@ -123,8 +123,7 @@ external_components:
 | `espmmw_x_static_sensitivity` | 静止灵敏度 |
 | `espmmw_x_unattended_duration` | 无人持续时间 |
 | `espmmw_x_auto_sensitivity` | 自动灵敏度校准 |
-| `espmmw_x_reset_conf` | 毫米波参数恢复 YAML 默认值 |
-| `espmmw_x_factory_reset` | 恢复出厂（清偏好并重启） |
+| `espmmw_x_factory_reset` | 恢复出厂（清偏好并重启；长按会先复位雷达） |
 | `espmmw_x_reboot` | 普通重启 |
 
 > 前缀以配置里的 `device_name` 为准；开启 MAC 后缀后，设备名还会带 `-xxxxxx`。

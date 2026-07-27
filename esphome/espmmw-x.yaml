@@ -70,6 +70,7 @@ uart:
     stop_bits: 1
 
 ra2413mt:
+  id: ra2413mt_hub
   uart_id: ra2413mt_uart
   # 传感器上报节流，减轻刷屏与负载
   throttle: 1s
@@ -93,6 +94,14 @@ script:
       - logger.log: "短按：30 秒后自动灵敏度校准（请保持房间无人）"
       - delay: 30s
       - button.press: auto_sensitivity
+  # 长按：先复位雷达默认参数，再清除 ESP 偏好并重启
+  - id: factory_reset_sequence
+    mode: single
+    then:
+      - logger.log: "长按：复位雷达参数后恢复出厂"
+      - lambda: id(ra2413mt_hub).reset_config();
+      - delay: 2s
+      - button.press: factory_reset_btn
 
 binary_sensor:
   # 毫米波有人/无人（GPIO 电平）
@@ -101,7 +110,7 @@ binary_sensor:
     name: ${device_name}_mmw
     device_class: occupancy
     icon: mdi:motion-sensor
-  # 背后按键：短按 → 30s 后自动校准；长按 ≥3s → 恢复出厂并重启
+  # 背后按键：短按 → 30s 后自动校准；长按 ≥3s → 先复位雷达再恢复出厂
   - platform: gpio
     pin:
       number: 2
@@ -118,11 +127,11 @@ binary_sensor:
         max_length: 1s
         then:
           - script.execute: delayed_auto_sensitivity
-      # 长按 ≥3s：恢复出厂（须显式设 max_length，默认只有 350ms）
+      # 长按 ≥3s：先 reset 雷达，再 factory_reset（须显式设 max_length）
       - min_length: 3s
         max_length: 30s
         then:
-          - button.press: factory_reset_btn
+          - script.execute: factory_reset_sequence
 
 sensor:
   - platform: wifi_signal
@@ -247,7 +256,7 @@ number:
       internal: true
 
 button:
-  # 清除 flash 偏好（含配网等）并重启；长按背后键触发
+  # 清除 flash 偏好（含配网等）并重启；由长按序列触发
   - platform: factory_reset
     id: factory_reset_btn
     name: ${device_name}_factory_reset
@@ -257,11 +266,6 @@ button:
     name: ${device_name}_reboot
     internal: true
   - platform: ra2413mt
-    # 将毫米波参数恢复为 YAML 中的 default
-    reset_conf:
-      id: reset_conf
-      name: ${device_name}_reset_conf
-      internal: true
     # 空房间采样底噪后自动设置运动/静止灵敏度
     auto_sensitivity:
       id: auto_sensitivity
