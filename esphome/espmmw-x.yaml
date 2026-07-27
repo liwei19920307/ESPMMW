@@ -113,11 +113,14 @@ binary_sensor:
     icon: mdi:radiobox-marked
     internal: true
     on_click:
+      # 短按：30s 后自动灵敏度校准
       - min_length: 50ms
         max_length: 1s
         then:
           - script.execute: delayed_auto_sensitivity
+      # 长按 ≥3s：恢复出厂（须显式设 max_length，默认只有 350ms）
       - min_length: 3s
+        max_length: 30s
         then:
           - button.press: factory_reset_btn
 
