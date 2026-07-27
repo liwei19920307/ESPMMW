@@ -123,7 +123,7 @@ external_components:
 | `espmmw_x_static_sensitivity` | 静止灵敏度 |
 | `espmmw_x_unattended_duration` | 无人持续时间 |
 | `espmmw_x_auto_sensitivity` | 自动灵敏度校准 |
-| `espmmw_x_factory_reset` | 恢复出厂（清偏好并重启；长按会先复位雷达） |
+| `espmmw_x_factory_reset` | 恢复出厂（先复位雷达，再清偏好并重启；长按背后键同效） |
 | `espmmw_x_reboot` | 普通重启 |
 
 > 前缀以配置里的 `friendly_name` 为准。
