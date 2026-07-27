@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ESPMMW Distance Card",
+        "description": "Install the 1D mmWave distance ruler Lovelace card for ESPMMW / X-RA2413MT. After setup, add a card with type: custom:espmmw-distance-card"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Already installed"
+    }
+  }
+}

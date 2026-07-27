@@ -1,0 +1,282 @@
+# ESPMMW-X 完整示例配置
+# 使用前：编辑同目录 secrets.yaml，填写 WiFi / API / OTA / 热点等密钥
+
+# 同一份固件可刷多块板：主机名与配网热点名会自动带 MAC 后缀（如 espmmw_x-a1b2c3）
+
+substitutions:
+  device_name: espmmw_x
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${device_name}
+  # 多设备区分：运行时主机名变为 espmmw_x-XXXXXX（MAC 后 3 字节）
+  name_add_mac_suffix: true
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# 从本仓库拉取 ra2413mt 组件
+external_components:
+  - source:
+      type: git
+      url: https://github.com/liwei19920307/ESPMMW
+      ref: X-RA2413MT
+      path: esphome/components
+    components: [ra2413mt]
+
+logger:
+  level: DEBUG
+
+debug:
+  update_interval: 5s
+
+api:
+  # 未接入 HA 时关闭「无客户端自动重启」
+  reboot_timeout: 0s
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  reboot_timeout: 0s
+  ap:
+    # 不写 ssid → 热点名使用设备名（含 MAC 后缀）
+    password: !secret ap_password
+    # 连不上家用 WiFi 后多久开启配网热点
+    ap_timeout: !secret ap_timeout
+
+captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+  # 方便调试：页面也显示 internal 实体
+  include_internal: true
+
+uart:
+  - id: ra2413mt_uart
+    rx_pin: 5
+    tx_pin: 6
+    baud_rate: 256000
+    data_bits: 8
+    stop_bits: 1
+
+ra2413mt:
+  uart_id: ra2413mt_uart
+  # 传感器上报节流，减轻刷屏与负载
+  throttle: 1s
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ${device_name}_ip
+      icon: mdi:ip-outline
+      internal: true
+    mac_address:
+      name: ${device_name}_mac
+      icon: mdi:map-marker-outline
+      internal: true
+
+script:
+  # 短按后倒计时 30s，再启动自动灵敏度校准；再次短按会重新计时
+  - id: delayed_auto_sensitivity
+    mode: restart
+    then:
+      - logger.log: "短按：30 秒后自动灵敏度校准（请保持房间无人）"
+      - delay: 30s
+      - button.press: auto_sensitivity
+
+binary_sensor:
+  # 毫米波有人/无人（GPIO 电平）
+  - platform: gpio
+    pin: 4
+    name: ${device_name}_mmw
+    device_class: occupancy
+    icon: mdi:motion-sensor
+  # 背后按键：短按 → 30s 后自动校准；长按 ≥3s → 恢复出厂并重启
+  - platform: gpio
+    pin:
+      number: 2
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    name: ${device_name}_button
+    icon: mdi:radiobox-marked
+    internal: true
+    on_click:
+      - min_length: 50ms
+        max_length: 1s
+        then:
+          - script.execute: delayed_auto_sensitivity
+      - min_length: 3s
+        then:
+          - button.press: factory_reset_btn
+
+sensor:
+  - platform: wifi_signal
+    name: ${device_name}_signal
+    icon: mdi:signal
+    internal: true
+  - platform: debug
+    free:
+      name: ${device_name}_free
+      unit_of_measurement: "KB"
+      internal: true
+      filters:
+        - lambda: |-
+            return x / 1024;
+    block:
+      name: ${device_name}_max_block
+      unit_of_measurement: "KB"
+      internal: true
+      filters:
+        - lambda: |-
+            return x / 1024;
+    loop_time:
+      name: ${device_name}_loop_time
+      internal: true
+  # 环境亮度（光敏电阻分压）
+  - platform: adc
+    pin: 3
+    name: ${device_name}_brightness
+    attenuation: 12db
+    update_interval: 5s
+    unit_of_measurement: "%"
+    icon: mdi:brightness-6
+    accuracy_decimals: 0
+    filters:
+      - lambda: |-
+          return (3 - x) / 0.03;
+  - platform: internal_temperature
+    name: ${device_name}_cpu_temprature
+    icon: mdi:thermometer
+    internal: true
+  - platform: ra2413mt
+    move_distance:
+      id: move_distance
+      name: ${device_name}_move_distance
+      internal: true
+      on_value:
+        then:
+          - number.set:
+              id: move_distance_bar
+              value: !lambda return x;
+    move_energy:
+      name: ${device_name}_move_energy
+      internal: true
+    static_distance:
+      id: static_distance
+      name: ${device_name}_static_distance
+      internal: true
+      on_value:
+        then:
+          - number.set:
+              id: static_distance_bar
+              value: !lambda return x;
+    static_energy:
+      name: ${device_name}_static_energy
+      internal: true
+
+number:
+  # 实时运动距离滑动条（展示用，拖动会被雷达数据覆盖）
+  - platform: template
+    id: move_distance_bar
+    name: ${device_name}_move_distance_bar
+    icon: mdi:ray-start-arrow
+    unit_of_measurement: cm
+    min_value: 0
+    max_value: 450
+    step: 1
+    mode: slider
+    optimistic: true
+    initial_value: 0
+    set_action:
+      - lambda: |-
+          if (!std::isnan(id(move_distance).state)) {
+            id(move_distance_bar).publish_state(id(move_distance).state);
+          }
+  # 实时静止距离滑动条（展示用）
+  - platform: template
+    id: static_distance_bar
+    name: ${device_name}_static_distance_bar
+    icon: mdi:ray-vertex
+    unit_of_measurement: cm
+    min_value: 0
+    max_value: 450
+    step: 1
+    mode: slider
+    optimistic: true
+    initial_value: 0
+    set_action:
+      - lambda: |-
+          if (!std::isnan(id(static_distance).state)) {
+            id(static_distance_bar).publish_state(id(static_distance).state);
+          }
+  - platform: ra2413mt
+    max_move_distance:
+      name: ${device_name}_max_move_distance
+      default: 4.5
+      internal: true
+    max_static_distance:
+      name: ${device_name}_max_static_distance
+      default: 4.5
+      internal: true
+    move_sensitivity:
+      name: ${device_name}_move_sensitivity
+      default: 99
+      internal: true
+    static_sensitivity:
+      name: ${device_name}_static_sensitivity
+      default: 15
+      internal: true
+    unattended_duration:
+      name: ${device_name}_unattended_duration
+      default: 5
+      internal: true
+
+button:
+  # 清除 flash 偏好（含配网等）并重启；长按背后键触发
+  - platform: factory_reset
+    id: factory_reset_btn
+    name: ${device_name}_factory_reset
+    internal: true
+  - platform: restart
+    id: reboot_btn
+    name: ${device_name}_reboot
+    internal: true
+  - platform: ra2413mt
+    # 将毫米波参数恢复为 YAML 中的 default
+    reset_conf:
+      id: reset_conf
+      name: ${device_name}_reset_conf
+      internal: true
+    # 空房间采样底噪后自动设置运动/静止灵敏度
+    auto_sensitivity:
+      id: auto_sensitivity
+      name: ${device_name}_auto_sensitivity
+
+# 红外收发（学习遥控器 RAW 码后可自行加 template button 发送）
+remote_transmitter:
+  pin: 1
+  carrier_duty_percent: 50%
+  non_blocking: true
+
+remote_receiver:
+  pin:
+    number: 0
+    inverted: true
+  dump: all
+
+# 蓝牙网关与 WiFi 2.4G 易互相干扰，默认关闭
+# esp32_ble_tracker:
+# bluetooth_proxy:
+#   active: true

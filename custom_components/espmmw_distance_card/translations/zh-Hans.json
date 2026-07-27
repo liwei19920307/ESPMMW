@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ESPMMW 距离尺卡片",
+        "description": "安装 ESPMMW / X-RA2413MT 的一维距离尺 Lovelace 卡片。安装后添加卡片：type: custom:espmmw-distance-card"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "已经安装过了"
+    }
+  }
+}

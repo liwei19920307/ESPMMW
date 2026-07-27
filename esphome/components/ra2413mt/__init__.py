@@ -4,9 +4,8 @@ import esphome.codegen as cg
 from esphome.const import CONF_ID
 
 CODEOWNERS = ["@liwei19920307"]
-
 DEPENDENCIES = ["uart"]
-
+AUTO_LOAD = ["sensor", "number", "button"]
 MULTI_CONF = True
 
 ra2413mt_ns = cg.esphome_ns.namespace("ra2413mt")
@@ -15,11 +14,13 @@ RA2413MTComponent = ra2413mt_ns.class_(
 )
 
 CONF_RA2413MT_ID = "ra2413mt_id"
+CONF_THROTTLE = "throttle"
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(RA2413MTComponent),
+            cv.Optional(CONF_THROTTLE, default="1000ms"): cv.positive_time_period_milliseconds,
         }
     )
     .extend(uart.UART_DEVICE_SCHEMA)
@@ -27,7 +28,7 @@ CONFIG_SCHEMA = cv.All(
 )
 
 FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
-    "ra2413mt_uart",
+    "ra2413mt",
     require_tx=True,
     require_rx=True,
     parity="NONE",
@@ -39,3 +40,4 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+    cg.add(var.set_throttle(config[CONF_THROTTLE]))

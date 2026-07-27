@@ -1,0 +1,12 @@
+{
+  "domain": "espmmw_distance_card",
+  "name": "ESPMMW Distance Card",
+  "codeowners": ["@liwei19920307"],
+  "config_flow": true,
+  "documentation": "https://github.com/liwei19920307/ESPMMW/tree/main/custom_components/espmmw_distance_card",
+  "issue_tracker": "https://github.com/liwei19920307/ESPMMW/issues",
+  "iot_class": "calculated",
+  "version": "1.0.0",
+  "requirements": [],
+  "dependencies": ["http", "frontend", "lovelace"]
+}

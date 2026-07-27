@@ -1,0 +1,9 @@
+type: custom:espmmw-distance-card
+title: ESPMMW 雷达
+presence: binary_sensor.espmmw_mmw
+move_distance: sensor.espmmw_move_distance
+move_energy: sensor.espmmw_move_energy
+static_distance: sensor.espmmw_static_distance
+static_energy: sensor.espmmw_static_energy
+max_distance: 450
+unit: cm

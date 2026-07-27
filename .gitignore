@@ -1,3 +1,16 @@
+.DS_Store
+**/.DS_Store
 ._*
 .D*
-__pycache__
+__pycache__/
+*.pyc
+*.pyo
+
+# ESPHome local build
+.esphome/
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*~
