@@ -218,7 +218,7 @@ number:
   - platform: template
     id: static_distance_bar
     name: static_distance_bar
-    icon: mdi:ray-vertex
+    icon: mdi:ray-start-arrow
     unit_of_measurement: cm
     min_value: 0
     max_value: 450
