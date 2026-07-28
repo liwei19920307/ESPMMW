@@ -69,7 +69,8 @@ uart:
     stop_bits: 1
 
 ra2413mt:
-  id: ra2413mt
+  # 注意：不能用 id: ra2413mt（与集成名冲突）
+  id: ra2413mt_hub
   uart_id: ra2413mt_uart
   # 传感器上报节流，减轻刷屏与负载
   throttle: 1s
@@ -98,7 +99,7 @@ script:
     mode: single
     then:
       - logger.log: "复位雷达参数后恢复出厂"
-      - lambda: id(ra2413mt).reset_config();
+      - lambda: id(ra2413mt_hub).reset_config();
       - delay: 2s
       - button.press: do_factory_reset
 
