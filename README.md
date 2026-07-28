@@ -29,7 +29,7 @@ HACS → 自定义仓库 → `https://github.com/liwei19920307/ESPMMW`（类别 
 - 运动 / 静止状态与距离、能量显示（含 Web 滑动条）
 - 灵敏度、检测距离可调
 - 背后按键：短按 30s 后自动灵敏度校准；长按 3s 先复位雷达再恢复出厂并重启
-- 多设备：改 `friendly_name` / `name` 区分；实体名前缀跟随 `friendly_name`
+- 多设备：改 `friendly_name` / `name` 区分；实体用短名，HA 侧靠设备名区分
 - IP、MAC、CPU 温度等状态；红外收发、OTA、Web 配网
 - 蓝牙代理（可选，默认关闭）
 
@@ -96,7 +96,7 @@ external_components:
     refresh: 0s   # 每次编译重新拉取；稳定后可改成 1d
 ```
 
-多设备：修改 substitutions 里的 `friendly_name`，以及 `esphome.name`（节点名需全局唯一）。实体名前缀跟随 `friendly_name`。
+多设备：修改 substitutions 里的 `friendly_name`，以及 `esphome.name`（节点名需全局唯一）。实体 `name` 用短名（如 `mmw`），HA 里显示为「设备名 + 实体名」。
 
 ### 背后按键
 
@@ -111,23 +111,21 @@ external_components:
 
 | 组件 | 含义 |
 | ---- | ---- |
-| `espmmw_x_mmw` | 毫米波状态（ON 有人 / OFF 无人） |
-| `espmmw_x_brightness` | 环境亮度 |
-| `espmmw_x_button` | 背后按键（见上表） |
-| `espmmw_x_move_distance` / `_bar` | 运动距离（数值 / 滑动条） |
-| `espmmw_x_static_distance` / `_bar` | 静止距离（数值 / 滑动条） |
-| `espmmw_x_move_energy` | 运动能量 |
-| `espmmw_x_static_energy` | 静止能量 |
-| `espmmw_x_max_move_distance` | 最大运动检测距离 |
-| `espmmw_x_max_static_distance` | 最大静止检测距离 |
-| `espmmw_x_move_sensitivity` | 运动灵敏度 |
-| `espmmw_x_static_sensitivity` | 静止灵敏度 |
-| `espmmw_x_unattended_duration` | 无人持续时间 |
-| `espmmw_x_auto_sensitivity` | 自动灵敏度校准 |
-| `espmmw_x_factory_reset` | 恢复出厂（先复位雷达，再清偏好并重启；长按背后键同效） |
-| `espmmw_x_reboot` | 普通重启 |
-
-> 前缀以配置里的 `friendly_name` 为准。
+| `mmw` | 毫米波状态（ON 有人 / OFF 无人） |
+| `brightness` | 环境亮度 |
+| `button` | 背后按键（见上表） |
+| `move_distance` / `move_distance_bar` | 运动距离（数值 / 滑动条） |
+| `static_distance` / `static_distance_bar` | 静止距离（数值 / 滑动条） |
+| `move_energy` | 运动能量 |
+| `static_energy` | 静止能量 |
+| `max_move_distance` | 最大运动检测距离 |
+| `max_static_distance` | 最大静止检测距离 |
+| `move_sensitivity` | 运动灵敏度 |
+| `static_sensitivity` | 静止灵敏度 |
+| `unattended_duration` | 无人持续时间 |
+| `auto_sensitivity` | 自动灵敏度校准 |
+| `factory_reset` | 恢复出厂（先复位雷达，再清偏好并重启；长按背后键同效） |
+| `reboot` | 普通重启 |
 
 ### 有人 / 无人触发逻辑
 
