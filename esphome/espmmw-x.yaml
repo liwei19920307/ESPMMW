@@ -100,7 +100,7 @@ script:
       - logger.log: "复位雷达参数后恢复出厂"
       - lambda: id(ra2413mt).reset_config();
       - delay: 2s
-      - button.press: factory_reset_exec
+      - button.press: do_factory_reset
 
 binary_sensor:
   # 毫米波有人/无人（GPIO 电平）
@@ -256,16 +256,18 @@ number:
       internal: true
 
 button:
-  # 对外按钮：先复位雷达，再真正 factory_reset
+  # 对外按钮：先复位雷达，再真正清偏好重启
+  # 注意：不能用 id: factory_reset（与集成名冲突）
   - platform: template
+    id: factory_reset_btn
     name: ${friendly_name}_factory_reset
     icon: mdi:factory
     internal: true
     on_press:
       - script.execute: factory_reset_sequence
-  # 实际执行清偏好并重启（仅被脚本引用，不暴露 name）
+  # 实际执行清偏好并重启（仅被脚本引用）
   - platform: factory_reset
-    id: factory_reset_exec
+    id: do_factory_reset
   - platform: restart
     name: ${friendly_name}_reboot
     internal: true
