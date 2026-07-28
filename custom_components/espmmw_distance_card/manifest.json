@@ -6,7 +6,7 @@
   "documentation": "https://github.com/liwei19920307/ESPMMW/tree/main/custom_components/espmmw_distance_card",
   "issue_tracker": "https://github.com/liwei19920307/ESPMMW/issues",
   "iot_class": "calculated",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "requirements": [],
   "dependencies": ["http", "frontend", "lovelace"]
 }

@@ -167,7 +167,7 @@ sensor:
       - lambda: |-
           return (3 - x) / 0.03;
   - platform: internal_temperature
-    name: cpu_temprature
+    name: cpu_temperature
     icon: mdi:thermometer
     internal: true
   - platform: ra2413mt

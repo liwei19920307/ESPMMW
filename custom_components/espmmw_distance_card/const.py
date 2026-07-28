@@ -2,4 +2,4 @@
 
 DOMAIN = "espmmw_distance_card"
 CARD_FILENAME = "espmmw-distance-card.js"
-CARD_VERSION = "1.0.0"
+CARD_VERSION = "1.1.0"

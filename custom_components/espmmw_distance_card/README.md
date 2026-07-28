@@ -29,11 +29,12 @@ move_distance: sensor.espmmw_x_move_distance
 move_energy: sensor.espmmw_x_move_energy
 static_distance: sensor.espmmw_x_static_distance
 static_energy: sensor.espmmw_x_static_energy
+brightness: sensor.espmmw_x_brightness
 max_distance: 450
 unit: cm
 ```
 
-> 实体 ID 以 HA 里实际为准（ESPHome 常带设备名前缀）。距离单位为 **cm**，量程默认 450。
+> 实体 ID 以 HA 里实际为准（ESPHome 常带设备名前缀）。距离单位为 **cm**，量程默认 450。`brightness` 可选，配置后显示环境亮度条。
 
 完整仪表盘片段见 [`dashboard.yaml`](./dashboard.yaml)。
 
