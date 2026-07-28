@@ -279,9 +279,10 @@ class EspmmwCard extends HTMLElement {
           font-size: 10px;
           font-weight: 600;
           white-space: nowrap;
-          transition: left 0.35s ease, opacity 0.25s ease;
+          transition: left 0.35s ease, opacity 0.25s ease, transform 0.35s ease;
           pointer-events: none;
           z-index: 3;
+          max-width: 100%;
         }
         .marker-label.move { color: var(--esp-move); }
         .marker-label.static { color: var(--esp-static); }
@@ -463,6 +464,7 @@ class EspmmwCard extends HTMLElement {
     if (!show) {
       mk.style.opacity = "";
       lb.style.opacity = "";
+      lb.style.transform = "";
       return;
     }
     const size = this._sizeFromEnergy(energy);
@@ -473,6 +475,14 @@ class EspmmwCard extends HTMLElement {
     mk.style.opacity = String(this._opacityFromEnergy(energy) * dim);
     lb.style.left = `${pct}%`;
     lb.style.opacity = String(dim);
+    // 贴边时避免标签越界：左侧左对齐，右侧右对齐
+    if (pct <= 12) {
+      lb.style.transform = "translateX(0)";
+    } else if (pct >= 88) {
+      lb.style.transform = "translateX(-100%)";
+    } else {
+      lb.style.transform = "translateX(-50%)";
+    }
     lb.textContent = this._fmtDist(distance);
   }
 
