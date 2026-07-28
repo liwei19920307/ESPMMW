@@ -266,6 +266,8 @@ button:
   # 实际执行清偏好并重启（不单独暴露）
   - platform: factory_reset
     id: factory_reset
+    name: ${friendly_name}_factory_reset_exec
+    internal: true
   - platform: restart
     id: reboot_btn
     name: ${friendly_name}_reboot
