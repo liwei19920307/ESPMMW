@@ -1,5 +1,6 @@
 # ESPMMW-X 完整示例配置
 # 使用前：编辑同目录 secrets.yaml，填写 WiFi / API / OTA / 热点等密钥
+# id 与 name 中 ${friendly_name}_ 后面的后缀保持一致
 
 substitutions:
   friendly_name: espmmw_x
@@ -68,7 +69,7 @@ uart:
     stop_bits: 1
 
 ra2413mt:
-  id: ra2413mt_hub
+  id: ra2413mt
   uart_id: ra2413mt_uart
   # 传感器上报节流，减轻刷屏与负载
   throttle: 1s
@@ -76,10 +77,12 @@ ra2413mt:
 text_sensor:
   - platform: wifi_info
     ip_address:
+      id: ip
       name: ${friendly_name}_ip
       icon: mdi:ip-outline
       internal: true
     mac_address:
+      id: mac
       name: ${friendly_name}_mac
       icon: mdi:map-marker-outline
       internal: true
@@ -97,13 +100,14 @@ script:
     mode: single
     then:
       - logger.log: "复位雷达参数后恢复出厂"
-      - lambda: id(ra2413mt_hub).reset_config();
+      - lambda: id(ra2413mt).reset_config();
       - delay: 2s
-      - button.press: factory_reset
+      - button.press: factory_reset_exec
 
 binary_sensor:
   # 毫米波有人/无人（GPIO 电平）
   - platform: gpio
+    id: mmw
     pin: 4
     name: ${friendly_name}_mmw
     device_class: occupancy
@@ -111,6 +115,7 @@ binary_sensor:
   # 背后按键：短按 → 30s 后自动校准；长按 ≥3s → 先复位雷达再恢复出厂
   # GPIO2 为 C3 strapping 脚；本板按键+上拉已验证可用，抑制编译警告
   - platform: gpio
+    id: button
     pin:
       number: 2
       mode:
@@ -134,11 +139,13 @@ binary_sensor:
 
 sensor:
   - platform: wifi_signal
+    id: signal
     name: ${friendly_name}_signal
     icon: mdi:signal
     internal: true
   - platform: debug
     free:
+      id: free
       name: ${friendly_name}_free
       unit_of_measurement: "KB"
       internal: true
@@ -146,6 +153,7 @@ sensor:
         - lambda: |-
             return x / 1024;
     block:
+      id: max_block
       name: ${friendly_name}_max_block
       unit_of_measurement: "KB"
       internal: true
@@ -153,10 +161,12 @@ sensor:
         - lambda: |-
             return x / 1024;
     loop_time:
+      id: loop_time
       name: ${friendly_name}_loop_time
       internal: true
   # 环境亮度（光敏电阻分压）
   - platform: adc
+    id: brightness
     pin: 3
     name: ${friendly_name}_brightness
     attenuation: 12db
@@ -168,6 +178,7 @@ sensor:
       - lambda: |-
           return (3 - x) / 0.03;
   - platform: internal_temperature
+    id: cpu_temprature
     name: ${friendly_name}_cpu_temprature
     icon: mdi:thermometer
     internal: true
@@ -182,6 +193,7 @@ sensor:
               id: move_distance_bar
               value: !lambda return x;
     move_energy:
+      id: move_energy
       name: ${friendly_name}_move_energy
       internal: true
     static_distance:
@@ -194,6 +206,7 @@ sensor:
               id: static_distance_bar
               value: !lambda return x;
     static_energy:
+      id: static_energy
       name: ${friendly_name}_static_energy
       internal: true
 
@@ -234,22 +247,27 @@ number:
           }
   - platform: ra2413mt
     max_move_distance:
+      id: max_move_distance
       name: ${friendly_name}_max_move_distance
       default: 4.5
       internal: true
     max_static_distance:
+      id: max_static_distance
       name: ${friendly_name}_max_static_distance
       default: 4.5
       internal: true
     move_sensitivity:
+      id: move_sensitivity
       name: ${friendly_name}_move_sensitivity
       default: 99
       internal: true
     static_sensitivity:
+      id: static_sensitivity
       name: ${friendly_name}_static_sensitivity
       default: 15
       internal: true
     unattended_duration:
+      id: unattended_duration
       name: ${friendly_name}_unattended_duration
       default: 5
       internal: true
@@ -257,7 +275,7 @@ number:
 button:
   # 对外按钮：先复位雷达，再真正 factory_reset
   - platform: template
-    id: factory_reset_btn
+    id: factory_reset
     name: ${friendly_name}_factory_reset
     icon: mdi:factory
     internal: true
@@ -265,11 +283,11 @@ button:
       - script.execute: factory_reset_sequence
   # 实际执行清偏好并重启（不单独暴露）
   - platform: factory_reset
-    id: factory_reset
+    id: factory_reset_exec
     name: ${friendly_name}_factory_reset_exec
     internal: true
   - platform: restart
-    id: reboot_btn
+    id: reboot
     name: ${friendly_name}_reboot
     internal: true
   - platform: ra2413mt
