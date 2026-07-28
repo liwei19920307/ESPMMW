@@ -1,8 +1,0 @@
-type: custom:espmmw-card
-title: 厨房 ESPMMW
-presence: binary_sensor.chu_fang_kitchen_espmmw_x_mmw
-move_distance: number.chu_fang_kitchen_espmmw_x_move_distance_bar
-static_distance: number.chu_fang_kitchen_espmmw_x_static_distance_bar
-brightness: sensor.chu_fang_kitchen_espmmw_x_brightness
-max_distance: 450
-unit: cm

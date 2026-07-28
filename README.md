@@ -14,16 +14,6 @@
 - 成本低（硬件约 60 元量级），稳定性好
 - 主控 ESP32-C3
 
-### Home Assistant 卡片
-
-Lovelace 卡片已做成 HACS 集成 **ESPMMW Card**（`custom:espmmw-card`）：
-
-→ [`custom_components/espmmw_card`](./custom_components/espmmw_card/README.md)
-
-HACS → 自定义仓库 → `https://github.com/liwei19920307/ESPMMW`（类别 **Integration**）即可安装。
-
-![ESPMMW Card](./img/ESPMMW-CARD.png)
-
 ### 固件特点
 
 - 运动 / 静止状态与距离、能量显示（含 Web 滑动条）
