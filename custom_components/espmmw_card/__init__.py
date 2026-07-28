@@ -1,4 +1,4 @@
-"""ESPMMW Distance Card — registers the Lovelace card for HACS / HA install."""
+"""ESPMMW Card — registers the Lovelace card for HACS / HA install."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ from .const import CARD_FILENAME, CARD_VERSION, DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 CARD_URL = f"/{DOMAIN}/{CARD_FILENAME}"
+# 旧集成路径，升级时一并替换资源 URL
+_LEGACY_RESOURCE_MARKERS = ("espmmw_distance_card", "espmmw-distance-card.js", DOMAIN, CARD_FILENAME)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -55,7 +57,7 @@ async def _async_register_card(hass: HomeAssistant) -> None:
 
     hass.data.setdefault(DOMAIN, {})["registered"] = True
     hass.data[DOMAIN]["url"] = versioned_url
-    _LOGGER.info("ESPMMW Distance Card registered at %s", versioned_url)
+    _LOGGER.info("ESPMMW Card registered at %s", versioned_url)
 
 
 async def _async_ensure_lovelace_resource(hass: HomeAssistant, versioned_url: str) -> None:
@@ -75,7 +77,7 @@ async def _async_ensure_lovelace_resource(hass: HomeAssistant, versioned_url: st
             existing = [
                 item
                 for item in resources.async_items()
-                if DOMAIN in item.get("url", "") or CARD_FILENAME in item.get("url", "")
+                if any(m in item.get("url", "") for m in _LEGACY_RESOURCE_MARKERS)
             ]
             if existing:
                 current = existing[0]

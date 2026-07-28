@@ -1,12 +1,12 @@
 /**
- * ESPMMW Distance Card — 1D mmWave linear range visualization
+ * ESPMMW Card — mmWave presence / distance Lovelace card
  * Styled to match Home Assistant official tile card.
  *
  * Install: copy to /config/www/ and add Lovelace resource
- *   url: /local/espmmw-distance-card.js
+ *   url: /local/espmmw-card.js
  *   type: module
  */
-class EspmmwDistanceCard extends HTMLElement {
+class EspmmwCard extends HTMLElement {
   static getStubConfig() {
     return {
       title: "ESPMMW",
@@ -91,6 +91,11 @@ class EspmmwDistanceCard extends HTMLElement {
           align-items: center;
           gap: 12px;
           min-width: 0;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 8px 10px;
+          border-radius: var(--ha-card-features-border-radius, 10px);
+          background: var(--esp-track);
         }
         .icon {
           position: relative;
@@ -116,19 +121,6 @@ class EspmmwDistanceCard extends HTMLElement {
           display: block;
         }
         .icon .mdi svg { width: 20px; height: 20px; fill: currentColor; }
-        .icon-badge {
-          position: absolute;
-          top: -3px;
-          right: -3px;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          border: 2px solid var(--card-background-color, var(--ha-card-background, #fff));
-          background: var(--esp-inactive);
-          box-sizing: border-box;
-        }
-        .icon-badge.on { background: var(--success-color, #4caf50); }
-        .icon-badge.off { background: var(--esp-inactive); }
 
         .info {
           display: flex;
@@ -137,11 +129,7 @@ class EspmmwDistanceCard extends HTMLElement {
           min-width: 0;
           flex: 1;
           cursor: pointer;
-          border-radius: 8px;
-          margin: -4px;
-          padding: 4px;
         }
-        .info:hover { background: color-mix(in srgb, var(--primary-text-color) 5%, transparent); }
         .primary {
           font-size: var(--ha-font-size-m, 14px);
           font-weight: var(--ha-font-weight-medium, 500);
@@ -168,13 +156,20 @@ class EspmmwDistanceCard extends HTMLElement {
         .features {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
           margin-top: 12px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .stats {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .stats.has-brightness {
+          grid-template-columns: 1fr 1fr 1fr;
         }
         .stat {
           display: flex;
@@ -186,7 +181,9 @@ class EspmmwDistanceCard extends HTMLElement {
           padding: 8px 10px;
           background: var(--esp-track);
           transition: background 160ms ease;
+          box-sizing: border-box;
         }
+        .stat.hidden { display: none; }
         .stat:hover {
           background: color-mix(in srgb, var(--disabled-color, #9e9e9e) 38%, transparent);
         }
@@ -206,6 +203,7 @@ class EspmmwDistanceCard extends HTMLElement {
         }
         .stat.move .value { color: var(--esp-move); }
         .stat.static .value { color: var(--esp-static); }
+        .stat.brightness .value { color: var(--esp-bright); }
         .stat .energy {
           font-size: var(--ha-font-size-xs, 11px);
           color: var(--secondary-text-color, #888);
@@ -217,55 +215,43 @@ class EspmmwDistanceCard extends HTMLElement {
           flex-direction: column;
           gap: 6px;
           cursor: pointer;
-          border-radius: var(--ha-card-features-border-radius, 10px);
-          padding: 2px 0;
-        }
-        .feature.hidden { display: none; }
-        .feature-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          gap: 8px;
-          padding: 0 2px;
-        }
-        .feature-label {
-          font-size: var(--ha-font-size-xs, 11px);
-          font-weight: var(--ha-font-weight-medium, 500);
-          letter-spacing: 0.3px;
-          color: var(--secondary-text-color, #888);
-          text-transform: uppercase;
-        }
-        .feature-value {
-          font-size: var(--ha-font-size-s, 12px);
-          font-weight: var(--ha-font-weight-medium, 500);
-          font-variant-numeric: tabular-nums;
-          color: var(--primary-text-color);
+          width: 100%;
+          box-sizing: border-box;
+          padding: 0;
+          margin: 0;
         }
 
+        /* 顶栏 / 按钮 / 进度条左右齐平 */
+        .ruler {
+          position: relative;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 0 0 16px;
+        }
         .control {
           position: relative;
-          height: 16px;
-          border-radius: 999px;
+          height: 10px;
+          width: 100%;
+          box-sizing: border-box;
+          border-radius: var(--ha-card-features-border-radius, 10px);
           background: var(--esp-track);
-        }
-        .control.thin { height: 10px; overflow: visible; }
-        .control.fill {
-          height: 100%;
-          width: 0%;
-          border-radius: 999px;
-          background: var(--esp-bright);
-          transition: width 0.35s ease;
+          overflow: visible;
         }
         .ticks {
           display: flex;
           justify-content: space-between;
-          padding: 0 1px;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 0;
+          margin: 0;
           font-size: 10px;
           line-height: 1;
           color: var(--secondary-text-color, #888);
           font-variant-numeric: tabular-nums;
           opacity: 0.85;
         }
+        .ticks span:first-child { text-align: left; }
+        .ticks span:last-child { text-align: right; }
 
         .marker {
           position: absolute;
@@ -281,10 +267,14 @@ class EspmmwDistanceCard extends HTMLElement {
         }
         .marker.move { background: var(--esp-move); }
         .marker.static { background: var(--esp-static); }
-        .marker.hidden { opacity: 0; }
+        .marker.hidden {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none;
+        }
         .marker-label {
           position: absolute;
-          top: -14px;
+          top: calc(100% + 4px);
           transform: translateX(-50%);
           font-size: 10px;
           font-weight: 600;
@@ -295,11 +285,9 @@ class EspmmwDistanceCard extends HTMLElement {
         }
         .marker-label.move { color: var(--esp-move); }
         .marker-label.static { color: var(--esp-static); }
-        .marker-label.hidden { opacity: 0; }
-
-        .ruler {
-          position: relative;
-          padding-top: 14px;
+        .marker-label.hidden {
+          opacity: 0 !important;
+          visibility: hidden !important;
         }
 
         .footer {
@@ -316,7 +304,6 @@ class EspmmwDistanceCard extends HTMLElement {
             <span class="mdi" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M12.5 2C9.85 2 7.45 3.08 5.72 4.81L7.14 6.23C8.5 4.88 10.36 4.05 12.5 4.05C16.64 4.05 20 7.41 20 11.55C20 13.69 19.17 15.55 17.82 16.91L19.24 18.33C20.97 16.6 22.05 14.2 22.05 11.55C22.05 6.27 17.78 2 12.5 2M7.14 16.91C5.79 15.55 4.96 13.69 4.96 11.55H2.91C2.91 14.2 3.99 16.6 5.72 18.33L7.14 16.91M12.5 7.1C10.04 7.1 8.05 9.09 8.05 11.55H10.1C10.1 10.22 11.17 9.15 12.5 9.15V7.1M16.95 11.55C16.95 9.09 14.96 7.1 12.5 7.1V9.15C13.83 9.15 14.9 10.22 14.9 11.55H16.95M6.04 21.5H18.96V19.45H6.04V21.5Z"/></svg>
             </span>
-            <span class="icon-badge"></span>
           </div>
           <div class="info" data-entity="presence" role="button" tabindex="0" title="查看详情">
             <div class="primary"></div>
@@ -336,31 +323,23 @@ class EspmmwDistanceCard extends HTMLElement {
               <span class="value">—</span>
               <span class="energy" data-entity="static_energy"></span>
             </div>
+            <div class="stat brightness hidden" data-entity="brightness" role="button" tabindex="0" title="查看详情">
+              <span class="label">亮度</span>
+              <span class="value">—</span>
+              <span class="energy"></span>
+            </div>
           </div>
 
           <div class="feature" data-entity="presence" role="button" tabindex="0" title="查看详情">
-            <div class="feature-head">
-              <span class="feature-label">距离</span>
-              <span class="feature-value dist-summary"></span>
-            </div>
             <div class="ruler">
-              <div class="marker-label move hidden"></div>
-              <div class="marker-label static hidden"></div>
-              <div class="control thin">
+              <div class="control">
                 <div class="marker move hidden"></div>
                 <div class="marker static hidden"></div>
+                <div class="marker-label move hidden"></div>
+                <div class="marker-label static hidden"></div>
               </div>
             </div>
             <div class="ticks dist-ticks"></div>
-          </div>
-
-          <div class="feature brightness hidden" data-entity="brightness" role="button" tabindex="0" title="查看详情">
-            <div class="feature-head">
-              <span class="feature-label">环境亮度</span>
-              <span class="feature-value bvalue">—</span>
-            </div>
-            <div class="control"><div class="fill bfill"></div></div>
-            <div class="ticks bticks"></div>
           </div>
         </div>
         <div class="footer"></div>
@@ -370,19 +349,16 @@ class EspmmwDistanceCard extends HTMLElement {
     this._els = {
       card: this._root.querySelector("ha-card"),
       icon: this._root.querySelector(".icon"),
-      iconBadge: this._root.querySelector(".icon-badge"),
       primary: this._root.querySelector(".primary"),
       secondary: this._root.querySelector(".secondary"),
+      stats: this._root.querySelector(".stats"),
       moveVal: this._root.querySelector(".stat.move .value"),
       moveEn: this._root.querySelector(".stat.move .energy"),
       staticVal: this._root.querySelector(".stat.static .value"),
       staticEn: this._root.querySelector(".stat.static .energy"),
-      brightness: this._root.querySelector(".feature.brightness"),
-      bfill: this._root.querySelector(".bfill"),
-      bvalue: this._root.querySelector(".bvalue"),
-      bticks: this._root.querySelector(".bticks"),
+      brightness: this._root.querySelector(".stat.brightness"),
+      bvalue: this._root.querySelector(".stat.brightness .value"),
       distTicks: this._root.querySelector(".dist-ticks"),
-      distSummary: this._root.querySelector(".dist-summary"),
       moveMk: this._root.querySelector(".marker.move"),
       staticMk: this._root.querySelector(".marker.static"),
       moveLb: this._root.querySelector(".marker-label.move"),
@@ -393,7 +369,6 @@ class EspmmwDistanceCard extends HTMLElement {
     this._moreInfoBound = false;
     this._bindMoreInfo();
     this._buildTicks();
-    this._buildBrightnessTicks();
     this._update();
   }
 
@@ -464,16 +439,6 @@ class EspmmwDistanceCard extends HTMLElement {
     this._lastUnit = unit;
   }
 
-  _buildBrightnessTicks() {
-    if (!this._els.bticks) return;
-    const parts = [];
-    for (let i = 0; i <= 5; i++) {
-      const v = (100 * i) / 5;
-      parts.push(`<span>${i === 5 ? `${v}%` : v}</span>`);
-    }
-    this._els.bticks.innerHTML = parts.join("");
-  }
-
   _pct(distance, max) {
     if (distance == null || max <= 0) return null;
     return Math.max(0, Math.min(100, (distance / max) * 100));
@@ -495,15 +460,19 @@ class EspmmwDistanceCard extends HTMLElement {
     const show = pct != null && distance > 0;
     mk.classList.toggle("hidden", !show);
     lb.classList.toggle("hidden", !show);
-    if (!show) return;
+    if (!show) {
+      mk.style.opacity = "";
+      lb.style.opacity = "";
+      return;
+    }
     const size = this._sizeFromEnergy(energy);
-    const opacity = this._opacityFromEnergy(energy) * (present === false ? 0.45 : 1);
+    const dim = present === false ? 0.55 : 1;
     mk.style.left = `${pct}%`;
     mk.style.width = `${size}px`;
     mk.style.height = `${size}px`;
-    mk.style.opacity = String(opacity);
+    mk.style.opacity = String(this._opacityFromEnergy(energy) * dim);
     lb.style.left = `${pct}%`;
-    lb.style.opacity = present === false ? "0.55" : "1";
+    lb.style.opacity = String(dim);
     lb.textContent = this._fmtDist(distance);
   }
 
@@ -536,16 +505,15 @@ class EspmmwDistanceCard extends HTMLElement {
 
   _updateBrightness() {
     const id = this._config.brightness;
-    const row = this._els.brightness;
+    const tile = this._els.brightness;
     if (!id) {
-      row.classList.add("hidden");
+      tile.classList.add("hidden");
+      this._els.stats.classList.remove("has-brightness");
       return;
     }
-    row.classList.remove("hidden");
-    const v = this._num(id);
-    const pct = v == null ? 0 : Math.max(0, Math.min(100, v));
-    this._els.bfill.style.width = `${pct}%`;
-    this._els.bvalue.textContent = this._fmtBrightness(v);
+    tile.classList.remove("hidden");
+    this._els.stats.classList.add("has-brightness");
+    this._els.bvalue.textContent = this._fmtBrightness(this._num(id));
   }
 
   _update() {
@@ -558,22 +526,15 @@ class EspmmwDistanceCard extends HTMLElement {
     this._els.primary.textContent = this._config.title || "ESPMMW";
 
     const present = this._present();
-    const bri = this._config.brightness ? this._num(this._config.brightness) : null;
 
-    // tile icon color + badge (active = green / inactive = grey)
     const active = present === true;
     const tileColor = active
       ? "var(--success-color, #4caf50)"
       : "var(--disabled-color, #9e9e9e)";
     this._els.card.style.setProperty("--tile-color", tileColor);
-    this._els.iconBadge.className = `icon-badge ${
-      present === null ? "" : present ? "on" : "off"
-    }`;
 
-    const stateText =
+    this._els.secondary.textContent =
       present === null ? "无实体" : present ? "有人" : "无人";
-    const briText = bri == null ? null : `亮度 ${this._fmtBrightness(bri)}`;
-    this._els.secondary.textContent = [stateText, briText].filter(Boolean).join(" · ");
 
     const md = this._num(this._config.move_distance);
     const me = this._num(this._config.move_energy);
@@ -588,11 +549,6 @@ class EspmmwDistanceCard extends HTMLElement {
 
     this._placeMarker(this._els.moveMk, this._els.moveLb, md, me, present, max);
     this._placeMarker(this._els.staticMk, this._els.staticLb, sd, se, present, max);
-
-    const parts = [];
-    if (md != null && md > 0) parts.push(`动 ${this._fmtDist(md)}`);
-    if (sd != null && sd > 0) parts.push(`静 ${this._fmtDist(sd)}`);
-    this._els.distSummary.textContent = parts.join(" · ") || "—";
 
     const missing = [
       this._config.presence,
@@ -615,12 +571,16 @@ class EspmmwDistanceCard extends HTMLElement {
   }
 }
 
-customElements.define("espmmw-distance-card", EspmmwDistanceCard);
+customElements.define("espmmw-card", EspmmwCard);
+// 兼容旧卡片类型名
+if (!customElements.get("espmmw-distance-card")) {
+  customElements.define("espmmw-distance-card", EspmmwCard);
+}
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "espmmw-distance-card",
-  name: "ESPMMW Distance Card",
-  description: "1D mmWave linear distance ruler for X-RA2413MT / ESPMMW",
+  type: "espmmw-card",
+  name: "ESPMMW Card",
+  description: "ESPMMW / X-RA2413MT presence and distance card",
   preview: true,
 });

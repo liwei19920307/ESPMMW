@@ -14,15 +14,15 @@
 - 成本低（硬件约 60 元量级），稳定性好
 - 主控 ESP32-C3
 
-### Home Assistant 距离尺卡片
+### Home Assistant 卡片
 
-1D 距离可视化已做成 HACS 集成：
+Lovelace 卡片已做成 HACS 集成 **ESPMMW Card**（`custom:espmmw-card`）：
 
-→ [`custom_components/espmmw_distance_card`](./custom_components/espmmw_distance_card/README.md)
+→ [`custom_components/espmmw_card`](./custom_components/espmmw_card/README.md)
 
 HACS → 自定义仓库 → `https://github.com/liwei19920307/ESPMMW`（类别 **Integration**）即可安装。
 
-![SLEEP](./img/SLEEP.png)
+![ESPMMW Card](./img/ESPMMW-CARD.png)
 
 ### 固件特点
 
@@ -96,7 +96,7 @@ external_components:
     refresh: 0s   # 每次编译重新拉取；稳定后可改成 1d
 ```
 
-多设备：修改 substitutions 里的 `friendly_name`，以及 `esphome.name`（节点名需全局唯一）。实体 `name` 用短名（如 `mmw`），HA 里显示为「设备名 + 实体名」。
+多设备：修改 `esphome.friendly_name` 与 `esphome.name`（节点名需全局唯一）。实体 `name` 用短名（如 `mmw`），HA 里显示为「设备名 + 实体名」。
 
 ### 背后按键
 

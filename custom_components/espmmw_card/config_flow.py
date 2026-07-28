@@ -1,4 +1,4 @@
-"""Config flow for ESPMMW Distance Card."""
+"""Config flow for ESPMMW Card."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from .const import DOMAIN
 
 
-class EspmmwDistanceCardConfigFlow(ConfigFlow, domain=DOMAIN):
+class EspmmwCardConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow."""
 
     VERSION = 1
@@ -18,6 +18,6 @@ class EspmmwDistanceCardConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
-            return self.async_create_entry(title="ESPMMW Distance Card", data={})
+            return self.async_create_entry(title="ESPMMW Card", data={})
 
         return self.async_show_form(step_id="user")
