@@ -33,7 +33,7 @@ CONFIG_SCHEMA = cv.Schema(
             icon="mdi:map-marker-distance",
         ).extend(
             {
-                cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(min=1.5, max=4.5),
+                cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(min=1.5, max=6.0),
             }
         ),
         cv.Optional(CONF_MAX_STATIC_DISTANCE): number.number_schema(
@@ -43,7 +43,7 @@ CONFIG_SCHEMA = cv.Schema(
             icon="mdi:map-marker-distance",
         ).extend(
             {
-                cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(min=1.5, max=4.5),
+                cv.Optional(CONF_DEFAULT, default=4.5): cv.float_range(min=1.5, max=6.0),
             }
         ),
         cv.Optional(CONF_MOVE_SENSITIVITY): number.number_schema(
@@ -82,7 +82,7 @@ async def to_code(config):
 
     if max_move_distance_config := config.get(CONF_MAX_MOVE_DISTANCE):
         n = await number.new_number(
-            max_move_distance_config, min_value=1.5, max_value=4.5, step=0.75
+            max_move_distance_config, min_value=1.5, max_value=6.0, step=0.75
         )
         await cg.register_parented(n, config[CONF_RA2413MT_ID])
         cg.add(ra2413mt_component.set_max_move_distance_number(n))
@@ -94,7 +94,7 @@ async def to_code(config):
 
     if max_static_distance_config := config.get(CONF_MAX_STATIC_DISTANCE):
         n = await number.new_number(
-            max_static_distance_config, min_value=1.5, max_value=4.5, step=0.75
+            max_static_distance_config, min_value=1.5, max_value=6.0, step=0.75
         )
         await cg.register_parented(n, config[CONF_RA2413MT_ID])
         cg.add(ra2413mt_component.set_max_static_distance_number(n))

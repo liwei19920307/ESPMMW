@@ -2,18 +2,22 @@
 #include "esphome/core/log.h"
 
 #include <cmath>
+#include <cstdio>
 
 namespace esphome {
 namespace ra2413mt {
 
 void RA2413MTComponent::setup() {
   this->rx_buffer_.reserve(64);
+  // 先查参数；若 N<8 再探测是否支持门限 8（6.0m）
   this->set_timeout("boot_query", 1500, [this]() { this->request_config(); });
 }
 
 void RA2413MTComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "RA2413MT:");
-  ESP_LOGCONFIG(TAG, "  Throttle: %ums", this->throttle_ms_);
+  ESP_LOGCONFIG(TAG, "  Throttle: %lums", (unsigned long) this->throttle_ms_);
+  ESP_LOGCONFIG(TAG, "  Max gate: %u (%.2fm) [%s]", this->max_gate_n_, this->max_detection_distance_m_(),
+                this->max_gate_detected_ ? "detected" : "pending query");
   LOG_SENSOR("  ", "Move Distance", this->move_distance_sensor_);
   LOG_SENSOR("  ", "Move Energy", this->move_energy_sensor_);
   LOG_SENSOR("  ", "Static Distance", this->static_distance_sensor_);
@@ -23,6 +27,7 @@ void RA2413MTComponent::dump_config() {
   LOG_NUMBER("  ", "Move Sensitivity", this->move_sensitivity_number_);
   LOG_NUMBER("  ", "Static Sensitivity", this->static_sensitivity_number_);
   LOG_NUMBER("  ", "Unattended Duration", this->unattended_duration_number_);
+  LOG_TEXT_SENSOR("  ", "Max Detection Range", this->max_detection_range_text_sensor_);
 }
 
 void RA2413MTComponent::loop() { this->poll_uart_(); }
@@ -328,17 +333,17 @@ void RA2413MTComponent::handle_query_ack_(const uint8_t *payload, size_t len) {
     return;
   }
 
-  const uint8_t max_gate_n = payload[3];
-  if (max_gate_n < 1 || max_gate_n > MAX_GATE) {
-    ESP_LOGW(TAG, "Unexpected max gate N=%u", max_gate_n);
+  const uint8_t reported_n = payload[3];
+  if (reported_n < 1 || reported_n > ABS_MAX_GATE) {
+    ESP_LOGW(TAG, "Unexpected max gate N=%u (supported 1..%u)", reported_n, ABS_MAX_GATE);
     return;
   }
 
-  const size_t sens_count = static_cast<size_t>(max_gate_n) + 1;
+  const size_t sens_count = static_cast<size_t>(reported_n) + 1;
   const size_t expected = 2 + 1 + 1 + 1 + 1 + sens_count + sens_count + 2;
   if (len < expected) {
     ESP_LOGW(TAG, "Query ACK length mismatch: got %u expected >= %u (N=%u)", (unsigned) len, (unsigned) expected,
-             max_gate_n);
+             reported_n);
     return;
   }
 
@@ -348,13 +353,46 @@ void RA2413MTComponent::handle_query_ack_(const uint8_t *payload, size_t len) {
   const uint8_t static_sensitivity = payload[6 + sens_count];
   const uint16_t duration = read_le16_(&payload[6 + 2 * sens_count]);
 
-  ESP_LOGD(TAG, "Config: move_gate=%u static_gate=%u move_sens=%u static_sens=%u duration=%us N=%u", max_move_gate,
-           max_static_gate, move_sensitivity, static_sensitivity, duration, max_gate_n);
+  if (this->probing_max_range_) {
+    this->probing_max_range_ = false;
+    // 模块若接受门限 8，会在 N 或当前 max_*_gate 中体现
+    const uint8_t accepted_cfg = max_move_gate > max_static_gate ? max_move_gate : max_static_gate;
+    const uint8_t accepted = reported_n > accepted_cfg ? reported_n : accepted_cfg;
+    if (accepted >= ABS_MAX_GATE) {
+      ESP_LOGI(TAG, "Range probe: module accepts gate %u (%.2fm)", ABS_MAX_GATE, gate_to_meters_(ABS_MAX_GATE));
+      this->apply_max_gate_(ABS_MAX_GATE);
+    } else {
+      ESP_LOGI(TAG, "Range probe: module limited to gate %u (%.2fm)", accepted, gate_to_meters_(accepted));
+      this->apply_max_gate_(accepted);
+      // 恢复探测前距离，避免把旧模块留在无效门限
+      this->send_set_distance_(this->probe_restore_move_gate_, this->probe_restore_static_gate_,
+                               this->probe_restore_duration_);
+      this->request_config();
+      return;
+    }
+  } else if (!this->max_gate_detected_) {
+    this->apply_max_gate_(reported_n);
+    if (reported_n < ABS_MAX_GATE) {
+      this->set_timeout("probe_max_range", 500, [this]() { this->probe_max_range_(); });
+    }
+  } else {
+    // 后续普通查询：以硬件已识别上限为准，但允许 ACK 报出更高 N
+    if (reported_n > this->max_gate_n_) {
+      this->apply_max_gate_(reported_n);
+    }
+  }
+
+  ESP_LOGI(TAG,
+           "Module max gate N=%u (%.2fm); config: move_gate=%u static_gate=%u move_sens=%u static_sens=%u duration=%us",
+           this->max_gate_n_, this->max_detection_distance_m_(), max_move_gate, max_static_gate, move_sensitivity,
+           static_sensitivity, duration);
 
   if (this->max_move_distance_number_ != nullptr) {
+    this->max_move_distance_number_->traits.set_max_value(this->max_detection_distance_m_());
     this->max_move_distance_number_->publish_state(gate_to_meters_(max_move_gate));
   }
   if (this->max_static_distance_number_ != nullptr) {
+    this->max_static_distance_number_->traits.set_max_value(this->max_detection_distance_m_());
     this->max_static_distance_number_->publish_state(gate_to_meters_(max_static_gate));
   }
   if (this->move_sensitivity_number_ != nullptr) {
@@ -366,6 +404,41 @@ void RA2413MTComponent::handle_query_ack_(const uint8_t *payload, size_t len) {
   if (this->unattended_duration_number_ != nullptr) {
     this->unattended_duration_number_->publish_state(duration);
   }
+}
+
+void RA2413MTComponent::apply_max_gate_(uint8_t max_gate) {
+  this->max_gate_n_ = clamp(max_gate, (uint8_t) 1, ABS_MAX_GATE);
+  this->max_gate_detected_ = true;
+  this->publish_max_detection_range_();
+}
+
+void RA2413MTComponent::publish_max_detection_range_() {
+  if (this->max_detection_range_text_sensor_ == nullptr) {
+    return;
+  }
+  // 例：4.5 m (N=6) / 6.0 m (N=8)
+  char buf[24];
+  snprintf(buf, sizeof(buf), "%.1f m (N=%u)", this->max_detection_distance_m_(), this->max_gate_n_);
+  this->max_detection_range_text_sensor_->publish_state(buf);
+}
+
+void RA2413MTComponent::probe_max_range_() {
+  if (this->probing_max_range_ || this->max_gate_n_ >= ABS_MAX_GATE) {
+    return;
+  }
+
+  this->probe_restore_move_gate_ = meters_to_gate_(this->get_max_move_distance_m());
+  this->probe_restore_static_gate_ = meters_to_gate_(this->get_max_static_distance_m());
+  this->probe_restore_duration_ = static_cast<uint16_t>(this->get_unattended_duration());
+  this->probing_max_range_ = true;
+
+  ESP_LOGI(TAG, "Range probe: trying gate %u (%.2fm)", ABS_MAX_GATE, gate_to_meters_(ABS_MAX_GATE));
+  // 临时允许写到绝对上限以探测能力
+  const uint8_t previous = this->max_gate_n_;
+  this->max_gate_n_ = ABS_MAX_GATE;
+  this->send_set_distance_(ABS_MAX_GATE, ABS_MAX_GATE, this->probe_restore_duration_);
+  this->max_gate_n_ = previous;
+  this->request_config();
 }
 
 void RA2413MTComponent::enqueue_command_(std::vector<uint8_t> payload) {
@@ -431,8 +504,8 @@ void RA2413MTComponent::send_disable_config_() {
 }
 
 void RA2413MTComponent::send_set_distance_(uint8_t max_move_gate, uint8_t max_static_gate, uint16_t duration_s) {
-  max_move_gate = clamp(max_move_gate, MIN_GATE, MAX_GATE);
-  max_static_gate = clamp(max_static_gate, MIN_GATE, MAX_GATE);
+  max_move_gate = clamp(max_move_gate, MIN_GATE, this->max_gate_n_);
+  max_static_gate = clamp(max_static_gate, MIN_GATE, this->max_gate_n_);
 
   // command word is added by write_framed_; queue stores full inner payload including cmd
   std::vector<uint8_t> inner;
@@ -486,9 +559,9 @@ void RA2413MTComponent::send_set_sensitivity_(uint16_t move_sensitivity, uint16_
   this->enqueue_command_(std::move(inner));
 }
 
-uint8_t RA2413MTComponent::meters_to_gate_(float meters) {
+uint8_t RA2413MTComponent::meters_to_gate_(float meters) const {
   int gate = static_cast<int>(lroundf(meters / GATE_SIZE_M));
-  return static_cast<uint8_t>(clamp(gate, (int) MIN_GATE, (int) MAX_GATE));
+  return static_cast<uint8_t>(clamp(gate, (int) MIN_GATE, (int) this->max_gate_n_));
 }
 
 float RA2413MTComponent::gate_to_meters_(uint8_t gate) { return static_cast<float>(gate) * GATE_SIZE_M; }

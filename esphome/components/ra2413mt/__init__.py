@@ -5,7 +5,7 @@ from esphome.const import CONF_ID
 
 CODEOWNERS = ["@liwei19920307"]
 DEPENDENCIES = ["uart"]
-AUTO_LOAD = ["sensor", "number", "button"]
+AUTO_LOAD = ["sensor", "number", "button", "text_sensor"]
 MULTI_CONF = True
 
 ra2413mt_ns = cg.esphome_ns.namespace("ra2413mt")
