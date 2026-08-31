@@ -73,7 +73,7 @@ ra2413mt:
   throttle: 1s
 
 text_sensor:
-  # 上电查询/探测后显示模块硬件最大检测距离（旧版 4.5m / 新版 6.0m）
+  # 上电查询后显示模块硬件量程（X-RA2413MT：4.5m / N=6）
   - platform: ra2413mt
     max_detection_range:
       name: max_detection_range

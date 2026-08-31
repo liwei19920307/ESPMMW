@@ -108,9 +108,9 @@ external_components:
 | `static_distance` / `static_distance_bar` | 静止距离（数值 / 滑动条） |
 | `move_energy` | 运动能量 |
 | `static_energy` | 静止能量 |
-| `max_detection_range` | 模块硬件最大检测距离（文本，如 `4.5 m (N=6)` / `6.0 m (N=8)`） |
-| `max_move_distance` | 最大运动检测距离（1.5–6.0m，步进 0.75；上电查询 + 门限探测自动识别：旧版 4.5m / 新版 6.0m） |
-| `max_static_distance` | 最大静止检测距离（同上，自动识别量程） |
+| `max_detection_range` | 模块硬件量程（文本，固定 `4.5 m (N=6)`） |
+| `max_move_distance` | 最大运动检测距离（1.5–4.5m，步进 0.75） |
+| `max_static_distance` | 最大静止检测距离（同上） |
 | `move_sensitivity` | 运动灵敏度 |
 | `static_sensitivity` | 静止灵敏度 |
 | `unattended_duration` | 无人持续时间 |
