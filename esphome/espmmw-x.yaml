@@ -11,12 +11,16 @@ esp32:
   framework:
     type: esp-idf
 
-# 本仓库本地组件（离线/网络不稳时用）；单独拷贝 yaml 时可改回 git 源
+# 从本仓库拉取 ra2413mt 组件
 external_components:
   - source:
-      type: local
-      path: components
+      type: git
+      url: https://github.com/liwei19920307/ESPMMW
+      ref: X-RA2413MT
+      path: esphome/components
     components: [ra2413mt]
+    # 每次编译都重新拉取，避免用到缓存的旧组件
+    refresh: 0s
 
 logger:
   level: DEBUG
@@ -69,6 +73,11 @@ ra2413mt:
   throttle: 1s
 
 text_sensor:
+  # 上电查询/探测后显示模块硬件最大检测距离（旧版 4.5m / 新版 6.0m）
+  - platform: ra2413mt
+    max_detection_range:
+      name: max_detection_range
+      icon: mdi:arrow-expand-horizontal
   - platform: wifi_info
     ip_address:
       name: ip
@@ -78,11 +87,6 @@ text_sensor:
       name: mac
       icon: mdi:map-marker-outline
       internal: true
-  # 上电查询/探测后显示模块硬件最大检测距离（旧版 4.5m / 新版 6.0m）
-  - platform: ra2413mt
-    max_detection_range:
-      name: max_detection_range
-      icon: mdi:arrow-expand-horizontal
 
 script:
   # 短按后倒计时 30s，再启动自动灵敏度校准；再次短按会重新计时
@@ -168,7 +172,7 @@ sensor:
       - lambda: |-
           return (3 - x) / 0.03;
   - platform: internal_temperature
-    name: cpu_temperature
+    name: cpu_temprature
     icon: mdi:thermometer
     internal: true
   - platform: ra2413mt
@@ -205,7 +209,7 @@ number:
     icon: mdi:ray-start-arrow
     unit_of_measurement: cm
     min_value: 0
-    max_value: 600
+    max_value: 450
     step: 1
     mode: slider
     optimistic: true
@@ -222,7 +226,7 @@ number:
     icon: mdi:ray-start-arrow
     unit_of_measurement: cm
     min_value: 0
-    max_value: 600
+    max_value: 450
     step: 1
     mode: slider
     optimistic: true
@@ -276,14 +280,6 @@ button:
       id: auto_sensitivity
       name: auto_sensitivity
       internal: true
-  # 回放学习到的 NEC：address=0xDE80 command=0xEB14
-  - platform: template
-    name: ir_nec_eb14
-    icon: mdi:remote
-    on_press:
-      - remote_transmitter.transmit_nec:
-          address: 0xDE80
-          command: 0xEB14
 
 # 红外收发（学习遥控器 RAW 码后可自行加 template button 发送）
 remote_transmitter:
